@@ -1,0 +1,105 @@
+package date
+
+import (
+	"errors"
+	"fmt"
+	"strings"
+	"time"
+)
+
+func Format(t time.Time) string {
+	var (
+		timePassed = time.Since(t)
+		seconds    = int(timePassed.Seconds())
+		minutes    = int(timePassed.Minutes())
+		hours      = int(timePassed.Hours() + 0.5)
+	)
+	switch {
+	case seconds < 1:
+		return "Less than a second ago"
+	case seconds == 1:
+		return "1 second ago"
+	case seconds < 60:
+		return fmt.Sprintf("%d seconds ago", seconds)
+	case minutes == 1:
+		return "About a minute ago"
+	case minutes < 60:
+		return fmt.Sprintf("%d minutes ago", minutes)
+	case hours == 1:
+		return "About an hour ago"
+	case hours < 48:
+		return fmt.Sprintf("%d hours ago", hours)
+	case hours < 24*7*2:
+		return fmt.Sprintf("%d days ago", hours/24)
+	case hours < 24*30*2:
+		return fmt.Sprintf("%d weeks ago", hours/24/7)
+	case hours < 24*365*2:
+		return fmt.Sprintf("%d months ago", hours/24/30)
+	default:
+		return fmt.Sprintf("%d years ago", int(timePassed.Hours())/24/365)
+	}
+}
+
+func ParseAbsolute(value string) (time.Time, error) {
+	t, err := time.Parse(time.RFC3339Nano, value)
+	if err == nil {
+		return t, nil
+	}
+	t, err = time.ParseInLocation("2006-01-02", value, time.Local)
+	if err == nil {
+		return t, nil
+	}
+	return time.Parse(time.UnixDate, value)
+}
+
+func ParseRelative(value string) (time.Time, error) {
+	t, err := ParseAbsolute(value)
+	if err == nil {
+		return t, nil
+	}
+	var amount time.Duration
+	var unit string
+	_, err = fmt.Sscanf(value, "%d %s ago", &amount, &unit)
+	if err == nil {
+		now := time.Now()
+		unit = strings.ToLower(unit)
+		switch unit {
+		case "seconds", "second":
+			return now.Add(-time.Second * amount), nil
+		case "minutes", "minute":
+			return now.Add(-time.Minute * amount), nil
+		case "hours", "hour":
+			return now.Add(-time.Hour * amount), nil
+		case "days", "day":
+			return now.Add(-time.Hour * 24 * amount), nil
+		case "weeks", "week":
+			return now.Add(-time.Hour * 24 * 7 * amount), nil
+		case "months", "month":
+			return now.Add(-time.Hour * 30 * 24 * 7 * amount), nil
+		case "years", "year":
+			return now.Add(-time.Hour * 365 * 30 * 24 * 7 * amount), nil
+		}
+	}
+	if value == "now" {
+		return time.Now(), nil
+	}
+	if value == "today" {
+		now := time.Now()
+		return midnight(now), nil
+	}
+	if value == "yesterday" {
+		now := time.Now()
+		yesterday := now.AddDate(0, 0, -1)
+		return midnight(yesterday), nil
+	}
+	if value == "tomorrow" {
+		now := time.Now()
+		tomorrow := now.AddDate(0, 0, 1)
+		return midnight(tomorrow), nil
+	}
+	return time.Time{}, errors.New("not supported date format: " + value)
+}
+
+func midnight(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+}
