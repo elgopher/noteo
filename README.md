@@ -1,7 +1,12 @@
 ## Installation
 
-1. Download the [release](https://github.com/jacekolszak/noteo/releases) or build using ```go get -u github.com/jacekolszak/noteo```
-1. Copy to your `bin` folder
+Download the [release archive](https://github.com/jacekolszak/noteo/releases) and extract the binary to your `bin` folder.
+
+If your OS/arch is not available you can try to build it manually using Go:
+
+```bash
+go get -u github.com/jacekolszak/noteo
+```
 
 ## Examples
 
