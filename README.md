@@ -1,6 +1,6 @@
 ## Installation
 
-1. Download the [release](https://github.com/jacekolszak/noteo/releases)
+1. Download the [release](https://github.com/jacekolszak/noteo/releases) or build using ```go get -u github.com/jacekolszak/noteo```
 1. Copy to your `bin` folder
 
 ## Examples
