@@ -18,27 +18,36 @@ go get -u github.com/jacekolszak/noteo
 
 ```
 $ mkdir mynotes
-$ cd mynotes
-$ noteo init
-repo initialized
-$ noteo add "My fantastic idea"
-some-short-idea.md created
-$ noteo ls
-FILE                   BEGINNING          MODIFIED        TAGS                                    
-some-short-idea.md     Some short idea    9 seconds ago          	        
-$ noteo tag add -n short some-short-idea.md
-some-short-idea.md updated
-$ cat some-short-idea.md
----
-Created: Fri Sep  4 00:54:19 CEST 2020
-Tags: short
----
 
-Some short idea 
-$ mkdir ideas
-$ noteo mv some-short-idea.md ideas/some-short-idea.md
-File moved
+$ cd mynotes
+
+$ noteo init
+  repo initialized
+
+$ noteo add "My fantastic idea"
+  my-fantastic-idea.md created
+
 $ noteo ls
-FILE                       BEGINNING         MODIFIED        TAGS                                    
-ideas/some-short-idea.md   Some short idea   2 minutes ago   short
+  FILE                                    BEGINNING                               MODIFIED                TAGS                                    
+  my-fantastic-idea.md                    My fantastic idea                       About a minute ago                   	        
+
+$ noteo tag add -n idea my-fantastic-idea.md
+  my-fantastic-idea.md updated
+
+$ cat my-fantastic-idea.md 
+  ---
+  Created: Sat Sep  5 12:30:05 CEST 2020
+  Tags: idea
+  ---
+  
+  My fantastic idea
+
+$ mkdir some-project
+
+$ noteo mv my-fantastic-idea.md some-project/my-fantastic-idea.md
+  File moved
+
+$ noteo ls
+  FILE                                    BEGINNING                               MODIFIED                TAGS                                    
+  some-project/my-fantastic-idea.md       My fantastic idea                       About a minute ago      idea      
 ```
