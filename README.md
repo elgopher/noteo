@@ -16,7 +16,7 @@ go get -u github.com/jacekolszak/noteo
 
 ## Examples
 
-```
+```shell script
 $ mkdir mynotes
 
 $ cd mynotes
@@ -24,7 +24,7 @@ $ cd mynotes
 $ noteo init
   repo initialized
 
-$ noteo add "My fantastic idea"
+$ noteo add My fantastic idea
   my-fantastic-idea.md created
 
 $ noteo ls
