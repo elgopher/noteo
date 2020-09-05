@@ -28,8 +28,8 @@ $ noteo add "My fantastic idea"
   my-fantastic-idea.md created
 
 $ noteo ls
-  FILE                                    BEGINNING                               MODIFIED                TAGS                                    
-  my-fantastic-idea.md                    My fantastic idea                       About a minute ago                   	        
+  FILE                                    BEGINNING             MODIFIED               TAGS
+  my-fantastic-idea.md                    My fantastic idea     About a minute ago
 
 $ noteo tag add -n idea my-fantastic-idea.md
   my-fantastic-idea.md updated
@@ -48,6 +48,6 @@ $ noteo mv my-fantastic-idea.md some-project/my-fantastic-idea.md
   File moved
 
 $ noteo ls
-  FILE                                    BEGINNING                               MODIFIED                TAGS                                    
-  some-project/my-fantastic-idea.md       My fantastic idea                       About a minute ago      idea      
+  FILE                                    BEGINNING             MODIFIED               TAGS
+  some-project/my-fantastic-idea.md       My fantastic idea     About a minute ago     idea
 ```
