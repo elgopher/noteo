@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
+	"github.com/google/uuid"
 	"github.com/jacekolszak/noteo/repository"
 	"github.com/spf13/cobra"
 )
@@ -35,7 +36,7 @@ var add = &cobra.Command{
 		text := repo.NewFileTemplate(time.Now())
 		if len(cmd.Flags().Args()) == 0 {
 			text += "\n"
-			tmpFile := filepath.Join(os.TempDir(), "new.md")
+			tmpFile := filepath.Join(os.TempDir(), uuid.New().String()+" .md")
 			if err := ioutil.WriteFile(tmpFile, []byte(text), 0664); err != nil {
 				return err
 			}
