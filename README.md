@@ -50,6 +50,13 @@ $ noteo mv my-fantastic-idea.md some-project/my-fantastic-idea.md
 $ noteo ls --tag idea
   FILE                                    BEGINNING             MODIFIED               TAGS
   some-project/my-fantastic-idea.md       My fantastic idea     About a minute ago     idea
+
+$ noteo tag set -n deadline:2020-08-30 some-project/my-fantastic-idea.md
+some-project/my-fantastic-idea.md updated
+
+$ noteo ls --tag-after deadline:2020-08-01
+  FILE                                    BEGINNING             MODIFIED               TAGS                 
+  some-project/my-fantastic-idea.md       My fantastic idea     21 seconds ago         idea deadline:2020-08-30
 ```
 
 ## File format
