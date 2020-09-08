@@ -148,6 +148,15 @@ func (r *Repository) Move(ctx context.Context, from, to string) (<-chan *Note, <
 			}
 			success <- true
 		}()
+		lstat, err := os.Lstat(to)
+		if err != nil && !os.IsNotExist(err) {
+			errs <- err
+			return
+		}
+		if !os.IsNotExist(err) && lstat.IsDir() {
+			_, file := filepath.Split(from)
+			to = filepath.Join(to, file)
+		}
 		for {
 			select {
 			case <-ctx.Done():
