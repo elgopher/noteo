@@ -1,9 +1,12 @@
 package repository_test
 
 import (
+	"context"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/jacekolszak/noteo/repository"
 	"github.com/stretchr/testify/assert"
@@ -181,6 +184,62 @@ Tags: foo bar
 
 text`, string(bytes))
 	})
+}
+
+func TestRepository_Move(t *testing.T) {
+	t.Run("should move file", func(t *testing.T) {
+		dir, repo := repo(t)
+		require.NoError(t, os.Chdir(dir))
+		filename, err := repo.Add("foo")
+		require.NoError(t, err)
+		ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second)
+		defer cancelFunc()
+		// when
+		notes, success, errors := repo.Move(ctx, filename, "bar.md")
+		// then
+		assertSuccess(t, ctx, notes, success, errors)
+	})
+	t.Run("should move to folder", func(t *testing.T) {
+		dir, repo := repo(t)
+		require.NoError(t, os.Chdir(dir))
+		err := os.MkdirAll("bar", os.ModePerm)
+		require.NoError(t, err)
+		filename, err := repo.Add("foo")
+		require.NoError(t, err)
+		ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second)
+		defer cancelFunc()
+		// when
+		notes, success, errors := repo.Move(ctx, filename, "bar")
+		// then
+		assertSuccess(t, ctx, notes, success, errors)
+	})
+}
+
+func assertSuccess(t *testing.T, ctx context.Context, notes <-chan *repository.Note, success <-chan bool, errors <-chan error) {
+	var successClosed, errorClosed, notesClosed bool
+	for !successClosed || !errorClosed || !notesClosed {
+		select {
+		case _, ok := <-notes:
+			if !ok {
+				notesClosed = true
+				continue
+			}
+		case e, ok := <-errors:
+			if !ok {
+				errorClosed = true
+				continue
+			}
+			require.FailNowf(t, "error received", "%v", e)
+		case <-ctx.Done():
+			require.FailNow(t, "timeout")
+		case s, ok := <-success:
+			if !ok {
+				successClosed = true
+				continue
+			}
+			assert.True(t, s)
+		}
+	}
 }
 
 func repo(t *testing.T) (dir string, repo *repository.Repository) {
