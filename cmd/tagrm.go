@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/fatih/color"
 	"github.com/jacekolszak/noteo/repository"
 	"github.com/spf13/cobra"
 )
@@ -46,7 +45,9 @@ func tagRm() *cobra.Command {
 				if err != nil {
 					_, _ = fmt.Fprintln(cmd.ErrOrStderr(), "skipping:", err)
 				} else if ok {
-					fmt.Printf("%s updated\n", color.CyanString(file))
+					printer := NewPrinter()
+					printer.PrintFile(file)
+					printer.Println(" updated")
 				}
 			}
 			if stdin {

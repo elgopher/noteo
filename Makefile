@@ -6,7 +6,9 @@ all: lint test install
 
 .PHONY: install
 install:
-	go install
+    # -s omits the symbol table and debug information
+    # -w omits the DWARF symbol table
+	go install -ldflags "-s -w"
 
 .PHONY: lint
 lint:

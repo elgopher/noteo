@@ -1,13 +1,15 @@
 package table
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/jacekolszak/noteo/date"
 	"github.com/jacekolszak/noteo/notes"
 	"github.com/jacekolszak/noteo/output"
+	"github.com/juju/ansiterm"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 var mapping = map[string]column{
@@ -19,6 +21,11 @@ var mapping = map[string]column{
 }
 
 func NewFormatter(columns []string, dateFormat date.Format) (*Formatter, error) {
+	w, h, err := terminal.GetSize(0)
+	if err != nil {
+		w = 80
+		h = 25
+	}
 	var cols []string
 	for _, c := range columns {
 		c = strings.ToUpper(c)
@@ -27,30 +34,68 @@ func NewFormatter(columns []string, dateFormat date.Format) (*Formatter, error) 
 		}
 		cols = append(cols, c)
 	}
-	return &Formatter{columns: cols, dateFormat: dateFormat}, nil
+	buffer := bytes.NewBuffer([]byte{})
+	writer := ansiterm.NewTabWriter(buffer, 0, 8, 1, '\t', 0)
+	writer.SetColorCapable(true)
+	return &Formatter{
+			columns:    cols,
+			dateFormat: dateFormat,
+			width:      w,
+			height:     h,
+			buffer:     buffer,
+			writer:     writer,
+		},
+		nil
 }
 
 type Formatter struct {
 	columns    []string
 	dateFormat date.Format
+	width      int
+	height     int
+	line       int
+	writer     *ansiterm.TabWriter
+	buffer     *bytes.Buffer
 }
 
-func (o Formatter) Header() string {
-	header := ""
-	for _, c := range o.columns {
-		header += mapping[c].header(opts{dateFormat: o.dateFormat}) + "\t"
-	}
-	header += "\n"
-	return header
+func (o *Formatter) flush() string {
+	_ = o.writer.Flush()
+	out := o.buffer.String()
+	o.buffer.Reset()
+	o.line = 0
+	return out
 }
 
-func (o Formatter) Note(note notes.Note) string {
-	header := ""
+func (o *Formatter) Header() string {
+	o.line++
 	for _, c := range o.columns {
-		header += mapping[c].cell(note, opts{dateFormat: o.dateFormat}) + "\t"
+		options := opts{dateFormat: o.dateFormat}
+		column := mapping[c]
+		column.printHeader(options, o.writer)
+		_, _ = o.writer.Write([]byte("\t"))
 	}
-	header += "\n"
-	return header
+	_, _ = o.writer.Write([]byte("\n"))
+	return ""
+}
+
+func (o *Formatter) Footer() string {
+	return o.flush()
+}
+
+func (o *Formatter) Note(note notes.Note) string {
+	out := ""
+	if o.line == o.height {
+		out = o.flush()
+	}
+	o.line++
+	for _, c := range o.columns {
+		options := opts{dateFormat: o.dateFormat}
+		column := mapping[c]
+		column.printValue(note, options, o.writer)
+		_, _ = o.writer.Write([]byte("\t"))
+	}
+	_, _ = o.writer.Write([]byte("\n"))
+	return out
 }
 
 func format(text string, limit int) string {
@@ -77,14 +122,9 @@ func beginning(text string) string {
 	return t
 }
 
-// File is formatted a slightly different
-func formatNoCut(text string, limit int) string {
-	return fmt.Sprintf("%-*s", limit, text)
-}
-
 type column interface {
-	header(opts opts) string
-	cell(note notes.Note, opts opts) string
+	printHeader(opts opts, writer *ansiterm.TabWriter)
+	printValue(note notes.Note, opts opts, writer *ansiterm.TabWriter)
 }
 
 type opts struct {
@@ -93,72 +133,65 @@ type opts struct {
 
 type fileColumn struct{}
 
-func (f fileColumn) header(opts) string {
-	return color.CyanString(format("FILE", 35))
+func (f fileColumn) printHeader(opts opts, writer *ansiterm.TabWriter) {
+	_, _ = writer.Write([]byte("FILE"))
 }
-func (f fileColumn) cell(note notes.Note, opts opts) string {
-	return color.CyanString(formatNoCut(note.Path(), 35))
+
+func (f fileColumn) printValue(note notes.Note, opts opts, writer *ansiterm.TabWriter) {
+	writer.SetForeground(ansiterm.BrightBlue)
+	defer writer.Reset()
+	_, _ = fmt.Fprint(writer, note.Path())
 }
 
 type beginningColumn struct{}
 
-func (s beginningColumn) header(opts) string {
-	return format("BEGINNING", 34)
+func (s beginningColumn) printHeader(opts opts, writer *ansiterm.TabWriter) {
+	_, _ = fmt.Fprint(writer, format("BEGINNING", 34))
 }
-func (s beginningColumn) cell(note notes.Note, opts opts) string {
+func (s beginningColumn) printValue(note notes.Note, opts opts, writer *ansiterm.TabWriter) {
 	text, _ := note.Text()
-	return format(beginning(text), 34)
+	writer.SetStyle(ansiterm.Bold)
+	defer writer.Reset()
+	_, _ = fmt.Fprint(writer, format(beginning(text), 34))
 }
 
 type modifiedColumn struct{}
 
-func (m modifiedColumn) header(opts opts) string {
-	return format("MODIFIED", dateLimit(opts.dateFormat))
+func (m modifiedColumn) printHeader(_ opts, writer *ansiterm.TabWriter) {
+	_, _ = writer.Write([]byte("MODIFIED"))
 }
 
-func dateLimit(dateFormat date.Format) int {
-	limit := 40
-	switch dateFormat {
-	case date.Relative:
-		limit = 18
-	case date.ISO8601:
-		limit = 35
-	case date.RFC2822:
-		limit = 35
-	}
-	return limit
-}
-
-func (m modifiedColumn) cell(note notes.Note, opts opts) string {
+func (m modifiedColumn) printValue(note notes.Note, opts opts, writer *ansiterm.TabWriter) {
 	modified := date.FormatWithType(note.Modified(), opts.dateFormat)
-	return format(modified, dateLimit(opts.dateFormat))
+	_, _ = fmt.Fprint(writer, modified)
 }
 
 type createdColumn struct{}
 
-func (c createdColumn) header(opts opts) string {
-	return format("CREATED", dateLimit(opts.dateFormat))
+func (c createdColumn) printHeader(_ opts, writer *ansiterm.TabWriter) {
+	_, _ = writer.Write([]byte("CREATED"))
 }
 
-func (c createdColumn) cell(note notes.Note, opts opts) string {
+func (c createdColumn) printValue(note notes.Note, opts opts, writer *ansiterm.TabWriter) {
 	created, err := note.Created()
 	if err != nil {
 		errString := err.Error()
 		errString = strings.ReplaceAll(errString, "\t", " ")
-		return errString
+		_, _ = fmt.Fprint(writer, errString)
+		return
 	}
 	modified := date.FormatWithType(created, opts.dateFormat)
-	return format(modified, dateLimit(opts.dateFormat))
+	_, _ = fmt.Fprint(writer, modified)
 }
 
 type tagsColumn struct{}
 
-func (t tagsColumn) header(opts) string {
-	return format("TAGS", 40)
+func (t tagsColumn) printHeader(_ opts, writer *ansiterm.TabWriter) {
+	_, _ = writer.Write([]byte("TAGS"))
 }
 
-func (t tagsColumn) cell(note notes.Note, opts opts) string {
+func (t tagsColumn) printValue(note notes.Note, opts opts, writer *ansiterm.TabWriter) {
 	tags, _ := output.StringTags(note)
 	tagsString := strings.Join(tags, " ")
-	return formatNoCut(tagsString, 40)
+	_, _ = fmt.Fprint(writer, tagsString)
 }

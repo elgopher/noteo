@@ -14,6 +14,10 @@ func (f Formatter) Header() string {
 	return ""
 }
 
+func (f Formatter) Footer() string {
+	return ""
+}
+
 func (f Formatter) Note(note notes.Note) string {
 	text, err := note.Text()
 	if err != nil {

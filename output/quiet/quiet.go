@@ -11,6 +11,10 @@ func (o Formatter) Header() string {
 	return ""
 }
 
+func (f Formatter) Footer() string {
+	return ""
+}
+
 func (o Formatter) Note(note notes.Note) string {
 	return note.Path() + "\n"
 }

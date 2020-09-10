@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +28,10 @@ func Execute() {
 	if err := root.Execute(); err != nil {
 		if e, ok := err.(repositoryError); ok && e.IsNotRepository() {
 			_, _ = fmt.Fprintln(os.Stderr, "not a noteo repository (or any of the parent directories)")
-			fmt.Println("Please run", color.CyanString("noteo init"))
+			printer := NewPrinter()
+			printer.Print("Please run ")
+			printer.PrintComand("note init")
+			printer.Println()
 		} else {
 			_, _ = fmt.Fprintln(os.Stderr, err)
 			if err := root.UsageFunc()(root); err != nil {
