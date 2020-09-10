@@ -23,7 +23,11 @@ func NewFormatter(columns []string) (*Formatter, error) {
 	for _, c := range columns {
 		c = strings.ToUpper(c)
 		if _, ok := mapping[c]; !ok {
-			return nil, fmt.Errorf("unsupported output column: %s", c)
+			var allColumns []string
+			for k := range mapping {
+				allColumns = append(allColumns, k)
+			}
+			return nil, fmt.Errorf("unsupported output column: %s. Possible values are: %s", c, strings.Join(allColumns, ","))
 		}
 		cols = append(cols, c)
 	}
