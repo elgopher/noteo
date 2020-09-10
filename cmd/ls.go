@@ -135,7 +135,7 @@ Sorting and limiting flags:
 Other flags:
   -h, --help                        help for ls
   -o, --output string               Specify output format: table using given columns, wide, json or yaml
-                                    (default "columns=file,beginning,modified,tags")
+                                    (default "table=file,beginning,modified,tags")
   -q, --quiet                       Show only file names{{if .HasAvailableInheritedFlags}}
 Global Flags:
 {{.InheritedFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasHelpSubCommands}}
@@ -295,8 +295,8 @@ func (c *lsCommand) formatter() (formatter, error) {
 		out = quiet.Formatter{}
 	case outputFormat == "wide":
 		out, err = table.NewFormatter([]string{"file", "beginning", "modified", "created", "tags"})
-	case strings.HasPrefix(outputFormat, "columns="):
-		columns := strings.Split(strings.TrimPrefix(outputFormat, "columns="), ",")
+	case strings.HasPrefix(outputFormat, "table="):
+		columns := strings.Split(strings.TrimPrefix(outputFormat, "table="), ",")
 		out, err = table.NewFormatter(columns)
 	case outputFormat == "json":
 		out = jayson.Formatter{}
