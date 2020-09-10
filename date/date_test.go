@@ -42,6 +42,22 @@ func TestParseAbsolute(t *testing.T) {
 		_, offset := ti.Zone()
 		assert.Equal(t, 60*60*2, offset)
 	})
+	t.Run("should parse strict ISO8601", func(t *testing.T) {
+		given := "2020-10-15T16:30:10+02:00"
+		// when
+		ti, err := date.ParseAbsolute(given)
+		// then
+		require.NoError(t, err)
+		year, month, day := ti.Date()
+		assert.Equal(t, 2020, year)
+		assert.Equal(t, time.October, month)
+		assert.Equal(t, 15, day)
+		assert.Equal(t, 16, ti.Hour())
+		assert.Equal(t, 30, ti.Minute())
+		assert.Equal(t, 10, ti.Second())
+		_, offset := ti.Zone()
+		assert.Equal(t, 60*60*2, offset)
+	})
 }
 
 func TestFormatRFC2822(t *testing.T) {
