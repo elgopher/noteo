@@ -15,7 +15,14 @@ const (
 	Relative Format = "relative"
 )
 
-var Now = time.Now()
+var now = time.Now
+
+func SetNow(f func() time.Time) {
+	if f == nil {
+		panic("nil function")
+	}
+	now = f
+}
 
 const iso8601Layout = "2006-01-02 15:04:05 Z0700"
 
@@ -107,33 +114,33 @@ func Parse(value string) (time.Time, error) {
 		unit = strings.ToLower(unit)
 		switch unit {
 		case "seconds", "second":
-			return Now.Add(-time.Second * amount), nil
+			return now().Add(-time.Second * amount), nil
 		case "minutes", "minute":
-			return Now.Add(-time.Minute * amount), nil
+			return now().Add(-time.Minute * amount), nil
 		case "hours", "hour":
-			return Now.Add(-time.Hour * amount), nil
+			return now().Add(-time.Hour * amount), nil
 		case "days", "day":
-			return Now.Add(-time.Hour * 24 * amount), nil
+			return now().Add(-time.Hour * 24 * amount), nil
 		case "weeks", "week":
-			return Now.Add(-time.Hour * 24 * 7 * amount), nil
+			return now().Add(-time.Hour * 24 * 7 * amount), nil
 		case "months", "month":
-			return Now.Add(-time.Hour * 30 * 24 * 7 * amount), nil
+			return now().Add(-time.Hour * 30 * 24 * 7 * amount), nil
 		case "years", "year":
-			return Now.Add(-time.Hour * 365 * 30 * 24 * 7 * amount), nil
+			return now().Add(-time.Hour * 365 * 30 * 24 * 7 * amount), nil
 		}
 	}
 	if value == "now" {
-		return Now, nil
+		return now(), nil
 	}
 	if value == "today" {
-		return midnight(Now), nil
+		return midnight(now()), nil
 	}
 	if value == "yesterday" {
-		yesterday := Now.AddDate(0, 0, -1)
+		yesterday := now().AddDate(0, 0, -1)
 		return midnight(yesterday), nil
 	}
 	if value == "tomorrow" {
-		tomorrow := Now.AddDate(0, 0, 1)
+		tomorrow := now().AddDate(0, 0, 1)
 		return midnight(tomorrow), nil
 	}
 	return time.Time{}, errors.New("not supported date format: " + value)
