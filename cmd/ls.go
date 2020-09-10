@@ -73,10 +73,10 @@ func ls() *cobra.Command {
   noteo ls --tag-after deadline:2020-08-30 --sort-by-tag-date deadline
 
   # List specific columns
-  noteo ls -o columns=file,tags`,
+  noteo ls -o table=file,tags`,
 	}
 	ls.Flags().BoolVarP(&c.quietMode, "quiet", "q", false, "")
-	ls.Flags().StringVarP(&c.outputFormat, "output", "o", "columns=file,beginning,modified,tags", "")
+	ls.Flags().StringVarP(&c.outputFormat, "output", "o", "table=file,beginning,modified,tags", "")
 	// filtering
 	ls.Flags().StringArrayVarP(&c.tagFilter, "tag", "t", nil, "")
 	ls.Flags().StringArrayVar(&c.notagFilter, "no-tag", nil, "")
