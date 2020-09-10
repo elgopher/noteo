@@ -73,10 +73,10 @@ func ls() *cobra.Command {
   noteo ls --tag-after deadline:2020-08-30 --sort-by-tag-date deadline
 
   # List specific columns
-  noteo ls -o columns=file,tags`,
+  noteo ls -o table=file,tags`,
 	}
 	ls.Flags().BoolVarP(&c.quietMode, "quiet", "q", false, "")
-	ls.Flags().StringVarP(&c.outputFormat, "output", "o", "columns=file,beginning,modified,tags", "")
+	ls.Flags().StringVarP(&c.outputFormat, "output", "o", "table=file,beginning,modified,tags", "")
 	// filtering
 	ls.Flags().StringArrayVarP(&c.tagFilter, "tag", "t", nil, "")
 	ls.Flags().StringArrayVar(&c.notagFilter, "no-tag", nil, "")
@@ -135,7 +135,7 @@ Sorting and limiting flags:
 Other flags:
   -h, --help                        help for ls
   -o, --output string               Specify output format: table using given columns, wide, json or yaml
-                                    (default "columns=file,beginning,modified,tags")
+                                    (default "table=file,beginning,modified,tags")
   -q, --quiet                       Show only file names{{if .HasAvailableInheritedFlags}}
 Global Flags:
 {{.InheritedFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasHelpSubCommands}}
@@ -295,8 +295,8 @@ func (c *lsCommand) formatter() (formatter, error) {
 		out = quiet.Formatter{}
 	case outputFormat == "wide":
 		out, err = table.NewFormatter([]string{"file", "beginning", "modified", "created", "tags"})
-	case strings.HasPrefix(outputFormat, "columns="):
-		columns := strings.Split(strings.TrimPrefix(outputFormat, "columns="), ",")
+	case strings.HasPrefix(outputFormat, "table="):
+		columns := strings.Split(strings.TrimPrefix(outputFormat, "table="), ",")
 		out, err = table.NewFormatter(columns)
 	case outputFormat == "json":
 		out = jayson.Formatter{}
