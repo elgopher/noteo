@@ -136,7 +136,7 @@ Sorting and limiting flags:
       --sort-by-tag-number string   
 
 Other flags:
-      --date                        show dates in given format: relative, iso8601 or rfc2822 (default relative). For now used in table and wide output only.
+      --date string                 show dates in given format: relative (default), iso8601 or rfc2822. For now used in table and wide output only.
   -h, --help                        help for ls
   -o, --output string               Specify output format: table using given columns, wide, json or yaml
                                     (default "table=file,beginning,modified,tags")
