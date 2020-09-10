@@ -186,7 +186,9 @@ Tags: foo bar
 text`, string(bytes))
 	})
 	t.Run("should set tag with relative date", func(t *testing.T) {
-		date.Now = time.Date(2020, 9, 10, 16, 30, 11, 0, time.FixedZone("CEST", 60*60*2))
+		date.SetNow(func() time.Time {
+			return time.Date(2020, 9, 10, 16, 30, 11, 0, time.FixedZone("CEST", 60*60*2))
+		})
 		dir, repo := repo(t)
 		file, err := repo.Add("test")
 		require.NoError(t, err)

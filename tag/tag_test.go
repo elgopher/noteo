@@ -47,7 +47,9 @@ func TestTag_MakeDateAbsolute(t *testing.T) {
 			expectedTag: "deadline:2020-09-10",
 		},
 	}
-	date.Now = time.Date(2020, 9, 10, 16, 30, 11, 0, time.FixedZone("CEST", 60*60*2))
+	date.SetNow(func() time.Time {
+		return time.Date(2020, 9, 10, 16, 30, 11, 0, time.FixedZone("CEST", 60*60*2))
+	})
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			tg, err := tag.New(test.tag)
