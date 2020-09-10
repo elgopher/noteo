@@ -178,7 +178,7 @@ func NoTags() Predicate {
 }
 
 func ModifiedAfter(modifiedAfter string) (Predicate, error) {
-	t, err := date.ParseRelative(modifiedAfter)
+	t, err := date.Parse(modifiedAfter)
 	if err != nil {
 		return nil, err
 	}
@@ -188,7 +188,7 @@ func ModifiedAfter(modifiedAfter string) (Predicate, error) {
 }
 
 func ModifiedBefore(modifiedBefore string) (Predicate, error) {
-	t, err := date.ParseRelative(modifiedBefore)
+	t, err := date.Parse(modifiedBefore)
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +198,7 @@ func ModifiedBefore(modifiedBefore string) (Predicate, error) {
 }
 
 func CreatedAfter(createdAfter string) (Predicate, error) {
-	t, err := date.ParseRelative(createdAfter)
+	t, err := date.Parse(createdAfter)
 	if err != nil {
 		return nil, err
 	}
@@ -212,7 +212,7 @@ func CreatedAfter(createdAfter string) (Predicate, error) {
 }
 
 func CreatedBefore(createdBefore string) (Predicate, error) {
-	t, err := date.ParseRelative(createdBefore)
+	t, err := date.Parse(createdBefore)
 	if err != nil {
 		return nil, err
 	}

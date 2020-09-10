@@ -7,7 +7,40 @@ import (
 	"time"
 )
 
-func Format(t time.Time) string {
+type Format string
+
+const (
+	RFC2822  Format = "rfc2822"
+	ISO8601  Format = "iso8601"
+	Relative Format = "relative"
+)
+
+const iso8601Layout = "2006-01-02 15:04:05 Z0700"
+
+func FormatWithType(t time.Time, f Format) string {
+	switch f {
+	case RFC2822:
+		return FormatRFC2822(t)
+	case ISO8601:
+		return FormatISO8601(t)
+	case Relative:
+		return FormatRelative(t)
+	default:
+		return "format " + string(f) + " not supported"
+	}
+}
+
+// Format timestamps in a ISO 8601-like format (same as in Git command)
+func FormatISO8601(t time.Time) string {
+	return t.Format(iso8601Layout)
+}
+
+// Format timestamps in RFC 2822 format, often found in email messages (same as in Git command)
+func FormatRFC2822(t time.Time) string {
+	return t.Format(time.RFC1123Z)
+}
+
+func FormatRelative(t time.Time) string {
 	var (
 		timePassed = time.Since(t)
 		seconds    = int(timePassed.Seconds())
@@ -45,6 +78,14 @@ func ParseAbsolute(value string) (time.Time, error) {
 	if err == nil {
 		return t, nil
 	}
+	t, err = time.Parse(time.RFC1123Z, value)
+	if err == nil {
+		return t, nil
+	}
+	t, err = time.Parse(iso8601Layout, value)
+	if err == nil {
+		return t, nil
+	}
 	t, err = time.ParseInLocation("2006-01-02", value, time.Local)
 	if err == nil {
 		return t, nil
@@ -52,7 +93,7 @@ func ParseAbsolute(value string) (time.Time, error) {
 	return time.Parse(time.UnixDate, value)
 }
 
-func ParseRelative(value string) (time.Time, error) {
+func Parse(value string) (time.Time, error) {
 	t, err := ParseAbsolute(value)
 	if err == nil {
 		return t, nil

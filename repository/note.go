@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/jacekolszak/noteo/date"
 	"github.com/jacekolszak/noteo/tag"
 	"gopkg.in/yaml.v2"
 )
@@ -245,7 +246,7 @@ func (h *frontMatter) ensureParsed() error {
 		}
 		created, ok := h.mapSlice.at("Created")
 		if ok {
-			createdTime, e := time.Parse(time.UnixDate, created.(string))
+			createdTime, e := date.ParseAbsolute(created.(string))
 			if e == nil {
 				h.created = createdTime
 			} else {
