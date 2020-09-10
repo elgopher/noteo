@@ -11,11 +11,11 @@ import (
 )
 
 var mapping = map[string]column{
-	"FILE":      fileColumn{},
-	"BEGINNING": beginningColumn{},
-	"MODIFIED":  modifiedColumn{},
-	"CREATED":   createdColumn{},
-	"TAGS":      tagsColumn{},
+	"FILE":        fileColumn{},
+	"BEGINNING":   beginningColumn{},
+	"MODIFIEDAGO": modifiedAgoColumn{},
+	"CREATEDAGO":  createdAgoColumn{},
+	"TAGS":        tagsColumn{},
 }
 
 func NewFormatter(columns []string) (*Formatter, error) {
@@ -105,24 +105,24 @@ func (s beginningColumn) cell(note notes.Note) string {
 	return format(beginning(text), 34)
 }
 
-type modifiedColumn struct{}
+type modifiedAgoColumn struct{}
 
-func (m modifiedColumn) header() string {
-	return format("MODIFIED", 18)
+func (m modifiedAgoColumn) header() string {
+	return format("MODIFIEDAGO", 18)
 }
 
-func (m modifiedColumn) cell(note notes.Note) string {
+func (m modifiedAgoColumn) cell(note notes.Note) string {
 	modified := date.Format(note.Modified())
 	return format(modified, 18)
 }
 
-type createdColumn struct{}
+type createdAgoColumn struct{}
 
-func (c createdColumn) header() string {
-	return format("CREATED", 18)
+func (c createdAgoColumn) header() string {
+	return format("CREATEDAGO", 18)
 }
 
-func (c createdColumn) cell(note notes.Note) string {
+func (c createdAgoColumn) cell(note notes.Note) string {
 	created, err := note.Created()
 	if err != nil {
 		errString := err.Error()
