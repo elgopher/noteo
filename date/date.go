@@ -93,7 +93,7 @@ func ParseAbsolute(value string) (time.Time, error) {
 	return time.Parse(time.UnixDate, value)
 }
 
-func ParseRelative(value string) (time.Time, error) {
+func Parse(value string) (time.Time, error) {
 	t, err := ParseAbsolute(value)
 	if err == nil {
 		return t, nil

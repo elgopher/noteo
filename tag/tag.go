@@ -64,5 +64,5 @@ func (t Tag) RelativeDate() (time.Time, error) {
 	if err != nil {
 		return time.Time{}, err
 	}
-	return date.ParseRelative(value)
+	return date.Parse(value)
 }
