@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/jacekolszak/noteo/date"
 	"github.com/jacekolszak/noteo/notes"
 	"github.com/jacekolszak/noteo/output/jayson"
 	"github.com/jacekolszak/noteo/output/quiet"
@@ -24,6 +25,7 @@ type lsCommand struct {
 	// projection
 	quietMode    bool
 	outputFormat string
+	date         string
 	// filtering
 	tagFilter      []string
 	notagFilter    []string
@@ -77,6 +79,7 @@ func ls() *cobra.Command {
 	}
 	ls.Flags().BoolVarP(&c.quietMode, "quiet", "q", false, "")
 	ls.Flags().StringVarP(&c.outputFormat, "output", "o", "table=file,beginning,modified,tags", "")
+	ls.Flags().StringVar(&c.date, "date", "", "")
 	// filtering
 	ls.Flags().StringArrayVarP(&c.tagFilter, "tag", "t", nil, "")
 	ls.Flags().StringArrayVar(&c.notagFilter, "no-tag", nil, "")
@@ -133,6 +136,7 @@ Sorting and limiting flags:
       --sort-by-tag-number string   
 
 Other flags:
+      --date                        show dates in given format: relative, iso8601 or rfc2822 (default relative). For now used in table and wide output only.
   -h, --help                        help for ls
   -o, --output string               Specify output format: table using given columns, wide, json or yaml
                                     (default "table=file,beginning,modified,tags")
@@ -286,18 +290,37 @@ func (c *lsCommand) sort() notes.Less {
 	return sort
 }
 
+func (c *lsCommand) dateFormat(defaultFormat date.Format) (date.Format, error) {
+	switch strings.ToLower(c.date) {
+	case "rfc", "rfc2822":
+		return date.RFC2822, nil
+	case "iso", "iso8601":
+		return date.ISO8601, nil
+	case "relative":
+		return date.Relative, nil
+	case "":
+		return defaultFormat, nil
+	default:
+		return "", fmt.Errorf("unsupported date format: %s", c.date)
+	}
+}
+
 func (c *lsCommand) formatter() (formatter, error) {
 	outputFormat := strings.ToLower(c.outputFormat)
 	var err error
 	var out formatter
+	dateFormat, err := c.dateFormat(date.Relative)
+	if err != nil {
+		return nil, err
+	}
 	switch {
 	case c.quietMode:
 		out = quiet.Formatter{}
 	case outputFormat == "wide":
-		out, err = table.NewFormatter([]string{"file", "beginning", "modified", "created", "tags"})
+		out, err = table.NewFormatter([]string{"file", "beginning", "modified", "created", "tags"}, dateFormat)
 	case strings.HasPrefix(outputFormat, "table="):
 		columns := strings.Split(strings.TrimPrefix(outputFormat, "table="), ",")
-		out, err = table.NewFormatter(columns)
+		out, err = table.NewFormatter(columns, dateFormat)
 	case outputFormat == "json":
 		out = jayson.Formatter{}
 	case outputFormat == "yaml":
