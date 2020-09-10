@@ -301,7 +301,7 @@ func (c *lsCommand) dateFormat(defaultFormat date.Format) (date.Format, error) {
 	case "":
 		return defaultFormat, nil
 	default:
-		return "", fmt.Errorf("unsupported date format: %s", c.date)
+		return "", fmt.Errorf("unsupported date format: %s. Supported formats are: rfc2822 (or rfc), iso8601 (or iso), relative", c.date)
 	}
 }
 
