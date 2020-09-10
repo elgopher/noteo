@@ -276,7 +276,7 @@ func (h *frontMatter) setTag(newTag tag.Tag) error {
 		return err
 	}
 	for i, oldTag := range h.tags {
-		if oldTag == newTag {
+		if oldTag.Name() == newTag.Name() {
 			h.tags[i] = newTag
 			return nil
 		}

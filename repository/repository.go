@@ -85,6 +85,10 @@ func (r *Repository) TagFileWith(file string, newTag string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	normalizedTag, err := t.MakeDateAbsolute()
+	if err == nil {
+		t = normalizedTag
+	}
 	if filepath.Ext(file) != ".md" {
 		return false, fmt.Errorf("%s has no *.md extension", file)
 	}

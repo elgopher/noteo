@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jacekolszak/noteo/date"
 	"github.com/jacekolszak/noteo/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -183,6 +184,25 @@ Tags: foo bar
 ---
 
 text`, string(bytes))
+	})
+	t.Run("should set tag with relative date", func(t *testing.T) {
+		date.Now = time.Date(2020, 9, 10, 16, 30, 11, 0, time.FixedZone("CEST", 60*60*2))
+		dir, repo := repo(t)
+		file, err := repo.Add("test")
+		require.NoError(t, err)
+		// when
+		ok, err := repo.TagFileWith(file, "deadline:now")
+		// then
+		require.NoError(t, err)
+		assert.True(t, ok)
+		// and
+		bytes, err := ioutil.ReadFile(filepath.Join(dir, file))
+		require.NoError(t, err)
+		assert.Equal(t, `---
+Tags: deadline:2020-09-10T16:30:11+02:00
+---
+
+test`, string(bytes))
 	})
 }
 

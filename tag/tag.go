@@ -66,3 +66,14 @@ func (t Tag) RelativeDate() (time.Time, error) {
 	}
 	return date.Parse(value)
 }
+
+func (t Tag) MakeDateAbsolute() (Tag, error) {
+	relativeDate, err := t.RelativeDate()
+	if err != nil {
+		return t, err
+	}
+	if relativeDate.Hour() == 0 && relativeDate.Minute() == 0 && relativeDate.Second() == 0 && relativeDate.Nanosecond() == 0 {
+		return Tag(t.Name() + ":" + relativeDate.Format("2006-01-02")), nil
+	}
+	return Tag(t.Name() + ":" + relativeDate.Format(time.RFC3339)), nil
+}
