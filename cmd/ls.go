@@ -19,6 +19,7 @@ import (
 type formatter interface {
 	Header() string
 	Note(note notes.Note) string
+	Footer() string
 }
 
 type lsCommand struct {
@@ -181,6 +182,7 @@ func (c *lsCommand) RunE(cmd *cobra.Command, args []string) error {
 	for note := range sortedNotes {
 		fmt.Print(out.Note(note))
 	}
+	fmt.Print(out.Footer())
 	return nil
 }
 

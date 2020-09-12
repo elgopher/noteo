@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fatih/color"
 	"github.com/google/uuid"
 	"github.com/jacekolszak/noteo/repository"
 	"github.com/spf13/cobra"
@@ -51,7 +50,9 @@ var add = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%s created\n", color.CyanString(f))
+		printer := NewPrinter()
+		printer.PrintFile(f)
+		printer.Println(" created")
 		return nil
 	},
 }

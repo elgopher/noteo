@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/fatih/color"
 	"github.com/jacekolszak/noteo/repository"
 	"github.com/spf13/cobra"
 )
@@ -27,18 +26,20 @@ var mv = &cobra.Command{
 		ctx := context.Background()
 		updated, success, errors := repo.Move(ctx, args[0], args[1])
 		printErrors(ctx, errors)
+		printer := NewPrinter()
 		for {
 			select {
 			case note, ok := <-updated:
 				if ok {
-					fmt.Printf("%s updated\n", color.CyanString(note.Path()))
+					printer.PrintFile(note.Path())
+					printer.Println(" updated")
 				}
 			case succ, ok := <-success:
 				if !ok {
 					return nil
 				}
 				if succ {
-					fmt.Println("File moved")
+					printer.Println("File moved")
 				} else {
 					return fmt.Errorf("move failed")
 				}
