@@ -115,26 +115,26 @@ Available Commands:{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "he
   {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}
 
 Filtering flags:
-      --created-after string        filter notes created after given date
-      --created-before string       filter notes created before given date
-      --grep string                 grep text using regular expression
-      --modified-after string       filter notes modified after given date
-      --modified-before string      filter notes modified before given date
-      --no-tag stringArray          filter notes not having tag
+      --created-after <date>        filter notes created after given date
+      --created-before <date>       filter notes created before given date
+      --grep <regex>                grep text using regular expression
+      --modified-after <date>       filter notes modified after given date
+      --modified-before <date>      filter notes modified before given date
+      --no-tag <name>               filter notes not having tag. Flag can be specified multiple times.
       --no-tags                     filter notes not having tags at all
-  -t, --tag stringArray             filter notes having tag
-      --tag-after stringArray       filter notes having tag with value date after specified date, i.e "foo:2010-08-01"
-      --tag-before stringArray      filter notes having tag with value date before specified date, i.e "foo:2010-08-01"
-      --tag-greater stringArray     filter notes having tag with value number greater than specified number i.e "foo:2"
-      --tag-grep stringArray        filter notes having tag matching regular expression 
-      --tag-lower stringArray       filter notes having tag with value number greater than specified number i.e "foo:2"
+  -t, --tag <name>                  filter notes having tag. Flag can be specified multiple times.
+      --tag-after <name:date>       filter notes having tag with value date after specified date, e.g. "foo:2010-08-01". Flag can be specified multiple times.
+      --tag-before <name:date>      filter notes having tag with value date before specified date, e.g. "foo:2010-08-01". Flag can be specified multiple times.
+      --tag-greater <name:number>   filter notes having tag with value number greater than specified number e.g. "foo:2". Flag can be specified multiple times.
+      --tag-grep <regex>            filter notes having tag matching regular expression. Flag can be specified multiple times.
+      --tag-lower <name:number>     filter notes having tag with value number greater than specified number e.g. "foo:2". Flag can be specified multiple times.
 
 Sorting and limiting flags:
   -l, --limit int                   limits number of notes returned (default 2147483647)
       --reverse                     makes sorting ascending
       --sort-by-created             sorts by created date descending
-      --sort-by-tag-date string     
-      --sort-by-tag-number string   
+      --sort-by-tag-date <name>     sorts by date given in a tag with name descending
+      --sort-by-tag-number <name>   sorts by number given in a tag with name descending
 
 Other flags:
       --date string                 shows dates in given format: relative (default), iso8601 or rfc2822. For now used in table and wide output only.
