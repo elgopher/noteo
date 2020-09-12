@@ -47,15 +47,6 @@ type Repository struct {
 	dir  string
 }
 
-func (r *Repository) NewFileTemplate(created time.Time) string {
-	return `---
-Created: ` + created.Format(time.UnixDate) + `
-Tags: ""
----
-
-`
-}
-
 func (r *Repository) Add(text string) (string, error) {
 	name, err := generateFilename(text)
 	if err != nil {

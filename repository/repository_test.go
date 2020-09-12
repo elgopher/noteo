@@ -143,7 +143,7 @@ second`,
 }
 
 func TestRepository_TagFileWith(t *testing.T) {
-	t.Run("show add yaml front matter for file without it", func(t *testing.T) {
+	t.Run("should add yaml front matter for file without it", func(t *testing.T) {
 		dir, repo := repo(t)
 		file := filepath.Join(dir, "gopher.md")
 		err := ioutil.WriteFile(file, []byte("text"), 0664)
@@ -159,17 +159,12 @@ func TestRepository_TagFileWith(t *testing.T) {
 		assert.Equal(t, `---
 Tags: gopher
 ---
-
 text`, string(bytes))
 	})
-	t.Run("show update front matter", func(t *testing.T) {
+	t.Run("should update front matter", func(t *testing.T) {
 		dir, repo := repo(t)
 		file := filepath.Join(dir, "gopher.md")
-		err := ioutil.WriteFile(file, []byte(`---
-Tags: foo
----
-
-text`), 0664)
+		err := ioutil.WriteFile(file, []byte("---\nTags: foo\n---\n\ntext"), 0664)
 		require.NoError(t, err)
 		// when
 		ok, err := repo.TagFileWith("gopher.md", "bar")
@@ -179,11 +174,7 @@ text`), 0664)
 		// and
 		bytes, err := ioutil.ReadFile(file)
 		require.NoError(t, err)
-		assert.Equal(t, `---
-Tags: foo bar
----
-
-text`, string(bytes))
+		assert.Equal(t, "---\nTags: foo bar\n---\n\ntext", string(bytes))
 	})
 	t.Run("should set tag with relative date", func(t *testing.T) {
 		date.SetNow(func() time.Time {
@@ -203,7 +194,6 @@ text`, string(bytes))
 		assert.Equal(t, `---
 Tags: deadline:2020-09-10T16:30:11+02:00
 ---
-
 test`, string(bytes))
 	})
 }
