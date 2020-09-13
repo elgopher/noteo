@@ -16,31 +16,6 @@ import (
 
 // 10:50
 func TestRepository_Add(t *testing.T) {
-	t.Run("should return error for empty note", func(t *testing.T) {
-		t.Skip("Skip until I decide if I want this functionality")
-		_, repo := repo(t)
-		tests := []string{
-			"",
-			`---
-Tags: ""
----
-`,
-			`---
-Tags: ""
----
-
-`,
-		}
-		for _, content := range tests {
-			t.Run(content, func(t *testing.T) {
-				// when
-				filename, err := repo.Add(content)
-				// then
-				require.Error(t, err)
-				assert.Equal(t, "", filename)
-			})
-		}
-	})
 	t.Run("should generate name", func(t *testing.T) {
 		tests := map[string]struct {
 			content          string

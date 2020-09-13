@@ -14,6 +14,7 @@ import (
 	"unicode"
 
 	"github.com/google/uuid"
+	"github.com/jacekolszak/noteo/parser"
 	"github.com/jacekolszak/noteo/tag"
 	godiacritics "gopkg.in/Regis24GmbH/go-diacritics.v2"
 )
@@ -265,16 +266,16 @@ func (r *Repository) Config() (*Config, error) {
 }
 
 func generateFilename(text string) (string, error) {
-	name := stripFrontMatter(text)
+	_, body, err := parser.Parse(strings.NewReader(text))
+	if err != nil {
+		return "", err
+	}
+	name := body
 	name = strings.TrimLeft(name, "\n")
 	if strings.Contains(name, "\n") {
 		name = name[:strings.Index(name, "\n")]
 	}
 	name = strings.Trim(name, "\n")
-	// Not yet decided what to do in this case:
-	//if name == "" {
-	//	return "", errors.New("empty note")
-	//}
 	name = godiacritics.Normalize(name)
 	notAllowedChars := regexp.MustCompile(`[^a-zA-Z0-9.\- ]`)
 	name = notAllowedChars.ReplaceAllString(name, "")
@@ -301,18 +302,6 @@ func generateFilename(text string) (string, error) {
 		name = "unknown"
 	}
 	return name, nil
-}
-
-func stripFrontMatter(text string) string {
-	yamlDivider := "---"
-	yamlDividerLen := len(yamlDivider)
-	if strings.HasPrefix(text, yamlDivider) {
-		index := strings.Index(text[yamlDividerLen:], yamlDivider)
-		if index > 0 {
-			return text[index+yamlDividerLen*2:]
-		}
-	}
-	return text
 }
 
 func generateUUID() string {
