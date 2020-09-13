@@ -257,7 +257,7 @@ func assertSuccess(t *testing.T, ctx context.Context, notes <-chan *repository.N
 func repo(t *testing.T) (dir string, repo *repository.Repository) {
 	dir, err := ioutil.TempDir("", "noteo-test")
 	require.NoError(t, err)
-	err = repository.Init(dir)
+	_, err = repository.Init(dir)
 	require.NoError(t, err)
 	repo, err = repository.ForWorkDir(dir)
 	require.NoError(t, err)

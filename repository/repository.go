@@ -18,16 +18,19 @@ import (
 	godiacritics "gopkg.in/Regis24GmbH/go-diacritics.v2"
 )
 
-func Init(dir string) error {
+func Init(dir string) (string, error) {
 	_, err := ForWorkDir(dir)
+	file := dotFile(dir)
 	if err == nil {
-		return errors.New("repo already initialized")
+		return file, errors.New("repository already initialized")
 	}
 	e, ok := err.(repoError)
 	if ok && e.IsNotRepository() {
-		return ioutil.WriteFile(dotFile(dir), []byte(""), 0664)
+		return file, ioutil.WriteFile(file, []byte(`# This is a Noteo configuration for repository (YAML format)
+# editor: vim +
+`), 0664)
 	}
-	return err
+	return file, err
 }
 
 func ForWorkDir(dir string) (*Repository, error) {
@@ -257,6 +260,10 @@ func (r *Repository) Tags(ctx context.Context) (<-chan tag.Tag, <-chan error) {
 	return tags, errs
 }
 
+func (r *Repository) Config() (*Config, error) {
+	return parse(dotFile(r.root))
+}
+
 func generateFilename(text string) (string, error) {
 	name := stripFrontMatter(text)
 	name = strings.TrimLeft(name, "\n")
@@ -313,7 +320,7 @@ func generateUUID() string {
 }
 
 func dotFile(dir string) string {
-	return filepath.Join(dir, ".noteo")
+	return filepath.Join(dir, ".noteo.yml")
 }
 
 func findRoot(dir string) (string, error) {

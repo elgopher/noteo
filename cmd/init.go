@@ -11,11 +11,11 @@ var initialize = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize a Noteo repository",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		err := repository.Init(".")
+		cfgFile, err := repository.Init(".")
 		if err != nil {
 			return err
 		}
-		fmt.Println("repo initialized")
+		fmt.Printf("Repository initialized. Configuration file saved at %s\n", cfgFile)
 		return nil
 	},
 }
