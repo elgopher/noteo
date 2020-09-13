@@ -1,0 +1,21 @@
+asciinema rec demo.cast
+mkdir mynotes
+cd mynotes
+noteo init
+noteo add
+My fantastic idea
+:x
+noteo ls
+ls
+noteo add Another idea
+noteo ls
+noteo tag set -n idea my-fantastic-idea.md
+cat my-fantastic-idea.md
+noteo ls --tag idea
+mkdir some-project
+noteo mv my-fantastic-idea.md some-project/my-fantastic-idea.md
+noteo ls
+noteo tag set -n deadline:2020-08-30 some-project/my-fantastic-idea.md
+noteo tag set -n deadline:2020-09-30 another-idea.md
+noteo ls
+noteo ls --tag-after deadline:2020-09-15
