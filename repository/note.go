@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/jacekolszak/noteo/date"
+	"github.com/jacekolszak/noteo/parser"
 	"github.com/jacekolszak/noteo/tag"
 	"gopkg.in/yaml.v2"
 )
@@ -104,13 +105,11 @@ func (n *Note) save() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if !strings.HasPrefix(text, "\n") {
-		text = "\n\n" + text
-	}
-	newBytes := []byte(frontMatter + text)
-	if bytes.Equal(n.content.bytes, newBytes) {
+	newContent := frontMatter + text
+	if n.content.meta+n.content.body == newContent {
 		return false, nil
 	}
+	newBytes := []byte(newContent)
 	if err := ioutil.WriteFile(n.path, newBytes, 0664); err != nil {
 		return false, err
 	}
@@ -118,40 +117,24 @@ func (n *Note) save() (bool, error) {
 }
 
 type content struct {
-	path  string
-	once  sync.Once
-	bytes []byte
-	meta  string
-	body  string
+	path string
+	once sync.Once
+	meta string
+	body string
 }
 
 func (c *content) ensureLoaded() error {
 	var err error
 	c.once.Do(func() {
-		bytesRead, e := ioutil.ReadFile(c.path)
-		if e != nil {
-			err = fmt.Errorf("%s ReadFile failed: %v", c.path, e)
+		var file *os.File
+		file, err = os.Open(c.path)
+		if err != nil {
 			return
 		}
-		c.bytes = bytesRead
-		text := string(bytesRead)
-		c.body = text
-		yamlDivider := "---"
-		yamlDividerLen := len(yamlDivider)
-		if strings.HasPrefix(text, yamlDivider) {
-			index := strings.Index(text[yamlDividerLen:], yamlDivider)
-			c.meta = text[yamlDividerLen : index+yamlDividerLen*2]
-			c.body = text[index+yamlDividerLen*2:]
-		}
+		defer file.Close()
+		c.meta, c.body, err = parser.Parse(file)
 	})
 	return err
-}
-
-func (c *content) Bytes() ([]byte, error) {
-	if err := c.ensureLoaded(); err != nil {
-		return nil, err
-	}
-	return c.bytes, nil
 }
 
 func (c *content) Meta() (string, error) {
@@ -208,6 +191,10 @@ func (s mapSlice) set(name string, val interface{}) mapSlice {
 		Key:   name,
 		Value: val,
 	})
+}
+
+func (s mapSlice) isEmpty() bool {
+	return len(s) == 0
 }
 
 func (h *frontMatter) ensureParsed() error {
@@ -321,10 +308,16 @@ func (h *frontMatter) marshal() (string, error) {
 		stringTags = append(stringTags, string(t))
 	}
 	serializedTags := strings.Join(stringTags, " ")
-	h.mapSlice = h.mapSlice.set("Tags", serializedTags)
+	_, tagsWereGivenBefore := h.mapSlice.at("Tags")
+	if len(serializedTags) != 0 || tagsWereGivenBefore {
+		h.mapSlice = h.mapSlice.set("Tags", serializedTags)
+	}
 	marshaledBytes, err := yaml.Marshal(h.mapSlice)
 	if err != nil {
 		return "", err
 	}
-	return "---\n" + string(marshaledBytes) + "---", nil
+	if h.mapSlice.isEmpty() {
+		return "", nil
+	}
+	return "---\n" + string(marshaledBytes) + "---\n", nil
 }

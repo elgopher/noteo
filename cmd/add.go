@@ -32,24 +32,24 @@ var add = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		text := ""
+		var text string
 		if len(cmd.Flags().Args()) == 0 {
-			templateText := repo.NewFileTemplate(time.Now()) + "\n"
+			template := newFileTemplate(time.Now()) + "\n"
 			tmpFile := filepath.Join(os.TempDir(), uuid.New().String()+" .md")
-			if err := ioutil.WriteFile(tmpFile, []byte(templateText), 0664); err != nil {
+			if err := ioutil.WriteFile(tmpFile, []byte(template), 0664); err != nil {
 				return err
 			}
 			text, err = textFromEditor(tmpFile)
 			if err != nil {
 				return err
 			}
-			if templateText == text {
+			if text == template {
 				fmt.Println("no new file added")
 				return nil
 			}
-			text = strings.TrimRight(text, "\n")
 		} else {
-			text += strings.Join(cmd.Flags().Args(), " ")
+			template := newFileTemplate(time.Now())
+			text = template + strings.Join(cmd.Flags().Args(), " ")
 		}
 		f, err := repo.Add(text)
 		if err != nil {
@@ -78,4 +78,13 @@ func textFromEditor(file string) (string, error) {
 		return "", fmt.Errorf("%v", err)
 	}
 	return string(text), nil
+}
+
+func newFileTemplate(created time.Time) string {
+	return `---
+Created: ` + created.Format(time.UnixDate) + `
+Tags: 
+---
+
+`
 }
