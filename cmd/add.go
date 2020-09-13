@@ -10,11 +10,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jacekolszak/noteo/config"
 	"github.com/jacekolszak/noteo/repository"
 	"github.com/spf13/cobra"
 )
-
-var editor = "vim +"
 
 var add = &cobra.Command{
 	Use:   "add [TEXT]",
@@ -32,6 +31,11 @@ var add = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		repoConfig, err := repo.Config()
+		if err != nil {
+			return err
+		}
+		cfg := config.New(repoConfig)
 		var text string
 		if len(cmd.Flags().Args()) == 0 {
 			template := newFileTemplate(time.Now()) + "\n"
@@ -39,7 +43,7 @@ var add = &cobra.Command{
 			if err := ioutil.WriteFile(tmpFile, []byte(template), 0664); err != nil {
 				return err
 			}
-			text, err = textFromEditor(tmpFile)
+			text, err = textFromEditor(tmpFile, cfg.EditorCommand())
 			if err != nil {
 				return err
 			}
@@ -62,8 +66,8 @@ var add = &cobra.Command{
 	},
 }
 
-func textFromEditor(file string) (string, error) {
-	editorNameWithArgs := strings.Split(editor, " ")
+func textFromEditor(file, editorCommand string) (string, error) {
+	editorNameWithArgs := strings.Split(editorCommand, " ")
 	name := editorNameWithArgs[0]
 	args := append(editorNameWithArgs[1:], file)
 	cmd := exec.Command(name, args...)
