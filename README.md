@@ -8,7 +8,7 @@ Noteo is a command line note-taking assistant which can be helpful in all 3 stag
 
 Download the [release archive](https://github.com/jacekolszak/noteo/releases) and extract the binary to your `bin` folder.
 
-If your OS/arch is not available you can try to build it manually using Go:
+If your OS/arch is not available you can try to build it manually using [Go](https://golang.org/):
 
 ```bash
 go get -u github.com/jacekolszak/noteo
