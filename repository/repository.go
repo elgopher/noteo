@@ -128,8 +128,6 @@ func (r *Repository) UntagFileRegex(file string, tagRegexToRemove string) (bool,
 }
 
 func (r *Repository) Move(ctx context.Context, from, to string) (<-chan *Note, <-chan bool, <-chan error) {
-	notes, notesErr := r.AllNotes(ctx)
-
 	updated := make(chan *Note)
 	errs := make(chan error)
 	success := make(chan bool)
@@ -138,15 +136,6 @@ func (r *Repository) Move(ctx context.Context, from, to string) (<-chan *Note, <
 		defer close(updated)
 		defer close(errs)
 		defer close(success)
-		defer func() {
-			err := os.Rename(from, to)
-			if err != nil {
-				errs <- err
-				success <- false
-				return
-			}
-			success <- true
-		}()
 		lstat, err := os.Lstat(to)
 		if err != nil && !os.IsNotExist(err) {
 			errs <- err
@@ -156,6 +145,15 @@ func (r *Repository) Move(ctx context.Context, from, to string) (<-chan *Note, <
 			_, file := filepath.Split(from)
 			to = filepath.Join(to, file)
 		}
+		if err := os.Rename(from, to); err != nil {
+			errs <- err
+			success <- false
+			return
+		}
+		defer func() {
+			success <- true
+		}()
+		notes, notesErr := r.AllNotes(ctx)
 		for {
 			select {
 			case <-ctx.Done():

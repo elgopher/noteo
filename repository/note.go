@@ -19,14 +19,15 @@ import (
 var tagSeparator = regexp.MustCompile(`[,\s]+`)
 
 type Note struct {
-	path        string
-	modified    time.Time
-	content     *content
-	frontMatter *frontMatter
+	path            string
+	modified        time.Time
+	originalContent *originalContent
+	frontMatter     *frontMatter
+	text            *text
 }
 
 func newNote(path string, modified time.Time) *Note {
-	content := &content{
+	content := &originalContent{
 		path: path,
 	}
 	frontMatter := &frontMatter{
@@ -34,11 +35,15 @@ func newNote(path string, modified time.Time) *Note {
 		meta:     content.Meta,
 		mapSlice: mapSlice{},
 	}
+	text := &text{
+		originalContent: content,
+	}
 	return &Note{
-		path:        path,
-		modified:    modified,
-		content:     content,
-		frontMatter: frontMatter,
+		path:            path,
+		modified:        modified,
+		originalContent: content,
+		frontMatter:     frontMatter,
+		text:            text,
 	}
 }
 
@@ -59,7 +64,7 @@ func (n *Note) Tags() ([]tag.Tag, error) {
 }
 
 func (n *Note) Text() (string, error) {
-	return n.content.Body()
+	return n.text.text()
 }
 
 func (n *Note) setTag(newTag tag.Tag) error {
@@ -75,24 +80,30 @@ func (n *Note) unsetTagRegex(regex *regexp.Regexp) error {
 }
 
 func (n *Note) updateLink(from, to string) error {
-	body, err := n.content.Body()
+	body, err := n.text.text()
 	if err != nil {
 		return err
 	}
-	linkRegexp := regexp.MustCompile(`(\[[^][]+])\(([^()]+)\)`) // TODO does not take into account code fences
-	body = linkRegexp.ReplaceAllStringFunc(body, func(s string) string {
-		pth := linkRegexp.FindStringSubmatch(s)[2]
-		joinedPath := filepath.Join(filepath.Dir(n.path), pth)
-		if from == joinedPath {
+	markdownLinkRegexp := regexp.MustCompile(`(\[[^][]+])\(([^()]+)\)`) // TODO does not take into account code fences
+	body = markdownLinkRegexp.ReplaceAllStringFunc(body, func(s string) string {
+		linkPath := markdownLinkRegexp.FindStringSubmatch(s)[2]
+		fullLinkPath := filepath.Join(filepath.Dir(n.path), linkPath)
+		if strings.HasPrefix(fullLinkPath, from) {
 			newTo, err := filepath.Rel(filepath.Dir(n.path), to)
 			if err != nil {
 				panic(err)
 			}
-			return linkRegexp.ReplaceAllString(s, `$1(`+newTo+`)`)
+			rel, err := filepath.Rel(from, fullLinkPath)
+			if err != nil {
+				panic(err)
+			}
+			newTo = filepath.Join(newTo, rel)
+			newTo = filepath.ToSlash(newTo)
+			return markdownLinkRegexp.ReplaceAllString(s, `$1(`+newTo+`)`)
 		}
 		return s
 	})
-	n.content.body = body
+	n.text.setText(body)
 	return nil
 }
 
@@ -106,7 +117,11 @@ func (n *Note) save() (bool, error) {
 		return false, err
 	}
 	newContent := frontMatter + text
-	if n.content.meta+n.content.body == newContent {
+	original, err := n.originalContent.Full()
+	if err != nil {
+		return false, err
+	}
+	if original == newContent {
 		return false, nil
 	}
 	newBytes := []byte(newContent)
@@ -116,14 +131,14 @@ func (n *Note) save() (bool, error) {
 	return true, nil
 }
 
-type content struct {
+type originalContent struct {
 	path string
 	once sync.Once
 	meta string
 	body string
 }
 
-func (c *content) ensureLoaded() error {
+func (c *originalContent) ensureLoaded() error {
 	var err error
 	c.once.Do(func() {
 		var file *os.File
@@ -137,18 +152,30 @@ func (c *content) ensureLoaded() error {
 	return err
 }
 
-func (c *content) Meta() (string, error) {
+func (c *originalContent) Meta() (string, error) {
 	if err := c.ensureLoaded(); err != nil {
 		return "", err
 	}
 	return c.meta, nil
 }
 
-func (c *content) Body() (string, error) {
+func (c *originalContent) Body() (string, error) {
 	if err := c.ensureLoaded(); err != nil {
 		return "", err
 	}
 	return c.body, nil
+}
+
+func (c *originalContent) Full() (string, error) {
+	meta, err := c.Meta()
+	if err != nil {
+		return "", err
+	}
+	body, err := c.Body()
+	if err != nil {
+		return "", err
+	}
+	return meta + body, nil
 }
 
 type frontMatter struct {
@@ -320,4 +347,27 @@ func (h *frontMatter) marshal() (string, error) {
 		return "", nil
 	}
 	return "---\n" + string(marshaledBytes) + "---\n", nil
+}
+
+type text struct {
+	body            string
+	once            sync.Once
+	originalContent *originalContent
+}
+
+func (t *text) text() (string, error) {
+	var err error
+	t.once.Do(func() {
+		var body string
+		body, err = t.originalContent.Body()
+		if err != nil {
+			return
+		}
+		t.body = body
+	})
+	return t.body, err
+}
+
+func (t *text) setText(body string) {
+	t.body = body
 }

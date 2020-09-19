@@ -14,7 +14,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// 10:50
 func TestRepository_Add(t *testing.T) {
 	t.Run("should generate name", func(t *testing.T) {
 		tests := map[string]struct {
@@ -121,8 +120,7 @@ func TestRepository_TagFileWith(t *testing.T) {
 	t.Run("should add yaml front matter for file without it", func(t *testing.T) {
 		dir, repo := repo(t)
 		file := filepath.Join(dir, "gopher.md")
-		err := ioutil.WriteFile(file, []byte("text"), 0664)
-		require.NoError(t, err)
+		writeFile(t, file, "text")
 		// when
 		ok, err := repo.TagFileWith("gopher.md", "gopher")
 		// then
@@ -136,11 +134,11 @@ Tags: gopher
 ---
 text`, string(bytes))
 	})
+
 	t.Run("should update front matter", func(t *testing.T) {
 		dir, repo := repo(t)
 		file := filepath.Join(dir, "gopher.md")
-		err := ioutil.WriteFile(file, []byte("---\nTags: foo\n---\n\ntext"), 0664)
-		require.NoError(t, err)
+		writeFile(t, file, "---\nTags: foo\n---\n\ntext")
 		// when
 		ok, err := repo.TagFileWith("gopher.md", "bar")
 		// then
@@ -151,6 +149,7 @@ text`, string(bytes))
 		require.NoError(t, err)
 		assert.Equal(t, "---\nTags: foo bar\n---\n\ntext", string(bytes))
 	})
+
 	t.Run("should set tag with relative date", func(t *testing.T) {
 		date.SetNow(func() time.Time {
 			return time.Date(2020, 9, 10, 16, 30, 11, 0, time.FixedZone("CEST", 60*60*2))
@@ -174,31 +173,61 @@ test`, string(bytes))
 }
 
 func TestRepository_Move(t *testing.T) {
-	t.Run("should move file", func(t *testing.T) {
+	t.Run("should rename file", func(t *testing.T) {
 		dir, repo := repo(t)
 		require.NoError(t, os.Chdir(dir))
-		filename, err := repo.Add("foo")
-		require.NoError(t, err)
+		writeFile(t, filepath.Join("source.md"), "source")
+		linkFile := filepath.Join(dir, "link.md")
+		writeFile(t, linkFile, "[link](source.md)")
 		ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second)
 		defer cancelFunc()
 		// when
-		notes, success, errors := repo.Move(ctx, filename, "bar.md")
+		notes, success, errors := repo.Move(ctx, "source.md", "target.md")
 		// then
 		assertSuccess(t, ctx, notes, success, errors)
+		assert.NoFileExists(t, "source.md")
+		assert.FileExists(t, "target.md")
+		assertFileEquals(t, linkFile, "[link](target.md)")
 	})
-	t.Run("should move to folder", func(t *testing.T) {
+
+	t.Run("should move file to directory", func(t *testing.T) {
 		dir, repo := repo(t)
 		require.NoError(t, os.Chdir(dir))
-		err := os.MkdirAll("bar", os.ModePerm)
-		require.NoError(t, err)
-		filename, err := repo.Add("foo")
-		require.NoError(t, err)
+		require.NoError(t, os.MkdirAll("target", os.ModePerm))
+		writeFile(t, "source.md", "source")
+		linkFile := filepath.Join(dir, "link.md")
+		writeFile(t, linkFile, "[link](source.md)")
 		ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second)
 		defer cancelFunc()
 		// when
-		notes, success, errors := repo.Move(ctx, filename, "bar")
+		notes, success, errors := repo.Move(ctx, "source.md", "target")
 		// then
 		assertSuccess(t, ctx, notes, success, errors)
+		assert.NoFileExists(t, "source.md")
+		assert.FileExists(t, filepath.Join("target", "source.md"))
+		assertFileEquals(t, linkFile, "[link](target/source.md)")
+	})
+
+	t.Run("should move whole dir", func(t *testing.T) {
+		dir, repo := repo(t)
+		require.NoError(t, os.Chdir(dir))
+		require.NoError(t, os.MkdirAll("source", os.ModePerm))
+		require.NoError(t, os.MkdirAll("target", os.ModePerm))
+		sourceDir := filepath.Join(dir, "source")
+		sourceFile := filepath.Join(sourceDir, "foo.md")
+		writeFile(t, sourceFile, "foo")
+		linkFile := filepath.Join(dir, "link.md")
+		writeFile(t, linkFile, "[link](source/foo.md)")
+		ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second)
+		defer cancelFunc()
+		// when
+		notes, success, errors := repo.Move(ctx, "source", "target")
+		// then
+		assertSuccess(t, ctx, notes, success, errors)
+		assert.NoDirExists(t, sourceDir)
+		assert.DirExists(t, filepath.Join(dir, "target", "source"))
+		assert.FileExists(t, filepath.Join(dir, "target", "source", "foo.md"))
+		assertFileEquals(t, linkFile, "[link](target/source/foo.md)")
 	})
 }
 
@@ -229,6 +258,12 @@ func assertSuccess(t *testing.T, ctx context.Context, notes <-chan *repository.N
 	}
 }
 
+func assertFileEquals(t *testing.T, file, expected string) {
+	content, err := ioutil.ReadFile(file)
+	require.NoError(t, err)
+	assert.Equal(t, expected, string(content))
+}
+
 func repo(t *testing.T) (dir string, repo *repository.Repository) {
 	dir, err := ioutil.TempDir("", "noteo-test")
 	require.NoError(t, err)
@@ -237,4 +272,8 @@ func repo(t *testing.T) (dir string, repo *repository.Repository) {
 	repo, err = repository.ForWorkDir(dir)
 	require.NoError(t, err)
 	return dir, repo
+}
+
+func writeFile(t *testing.T, filename, content string) {
+	require.NoError(t, ioutil.WriteFile(filename, []byte(content), os.ModePerm))
 }
