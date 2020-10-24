@@ -30,7 +30,7 @@ func Execute() {
 			_, _ = fmt.Fprintln(os.Stderr, "not a noteo repository (or any of the parent directories)")
 			printer := NewPrinter()
 			printer.Print("Please run ")
-			printer.PrintComand("noteo init")
+			printer.PrintCommand("noteo init")
 			printer.Println()
 		} else {
 			_, _ = fmt.Fprintln(os.Stderr, err)
