@@ -10,36 +10,45 @@ import (
 	"github.com/jacekolszak/noteo/tag"
 )
 
-func Filter(ctx context.Context, notes <-chan Note, predicate ...Predicate) (note <-chan Note, errors <-chan error) {
+func Filter(ctx context.Context, notes <-chan Note, predicates ...Predicate) (note <-chan Note, errors <-chan error) {
 	out := make(chan Note)
 	errs := make(chan error)
 	go func() {
 		defer close(out)
 		defer close(errs)
-	main:
-		for {
-			select {
-			case note, ok := <-notes:
-				if !ok {
-					break main
-				}
-				for _, p := range predicate {
-					matches, err := p(note)
-					if err != nil {
-						errs <- fmt.Errorf("executing predicate failed on note %s: %v", note.Path(), err)
-						continue main
-					}
-					if !matches {
-						continue main
-					}
-				}
-				out <- note
-			case <-ctx.Done():
-				break main
-			}
-		}
+		filterLoop(ctx, notes, predicates, out, errs)
 	}()
 	return out, errs
+}
+
+func filterLoop(ctx context.Context, notes <-chan Note, predicates []Predicate, out chan<- Note, errs chan<- error) {
+	for {
+		select {
+		case note, ok := <-notes:
+			if !ok {
+				return
+			}
+			if noteMatches(note, predicates, errs) {
+				out <- note
+			}
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+func noteMatches(note Note, predicates []Predicate, errs chan<- error) bool {
+	for _, predicate := range predicates {
+		matches, err := predicate(note)
+		if err != nil {
+			errs <- fmt.Errorf("executing predicate failed on note %s: %v", note.Path(), err)
+			return false
+		}
+		if !matches {
+			return false
+		}
+	}
+	return true
 }
 
 type Predicate func(note Note) (bool, error)
