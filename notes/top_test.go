@@ -30,7 +30,7 @@ func TestTop(t *testing.T) {
 	}
 
 	t.Run("should sort", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 		notesChannel := make(chan notes.Note, 3)
 		notesChannel <- note2020
@@ -47,7 +47,7 @@ func TestTop(t *testing.T) {
 	})
 
 	t.Run("should limit", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 		notesChannel := make(chan notes.Note, 2)
 		notesChannel <- note2020
