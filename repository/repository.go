@@ -127,7 +127,7 @@ func (r *Repository) UntagFileRegex(file string, tagRegexToRemove string) (bool,
 	return note.save()
 }
 
-func (r *Repository) Move(ctx context.Context, from, to string) (<-chan *Note, <-chan bool, <-chan error) {
+func (r *Repository) Move(ctx context.Context, source, target string) (<-chan *Note, <-chan bool, <-chan error) {
 	updated := make(chan *Note)
 	errs := make(chan error)
 	success := make(chan bool)
@@ -136,16 +136,12 @@ func (r *Repository) Move(ctx context.Context, from, to string) (<-chan *Note, <
 		defer close(updated)
 		defer close(errs)
 		defer close(success)
-		lstat, err := os.Lstat(to)
-		if err != nil && !os.IsNotExist(err) {
+		target, err := addSourceFileToTargetIfTargetIsDirectory(source, target)
+		if err != nil {
 			errs <- err
 			return
 		}
-		if !os.IsNotExist(err) && lstat.IsDir() {
-			_, file := filepath.Split(from)
-			to = filepath.Join(to, file)
-		}
-		if err := os.Rename(from, to); err != nil {
+		if err := os.Rename(source, target); err != nil {
 			errs <- err
 			success <- false
 			return
@@ -167,7 +163,7 @@ func (r *Repository) Move(ctx context.Context, from, to string) (<-chan *Note, <
 				if !ok {
 					return
 				}
-				err := note.updateLink(from, to)
+				err := note.updateLink(source, target)
 				if err != nil {
 					errs <- err
 					continue
@@ -184,6 +180,18 @@ func (r *Repository) Move(ctx context.Context, from, to string) (<-chan *Note, <
 		}
 	}()
 	return updated, success, errs
+}
+
+func addSourceFileToTargetIfTargetIsDirectory(source, target string) (string, error) {
+	targetStat, err := os.Lstat(target)
+	if err != nil && !os.IsNotExist(err) {
+		return target, err
+	}
+	if !os.IsNotExist(err) && targetStat.IsDir() {
+		_, sourceFile := filepath.Split(source)
+		return filepath.Join(target, sourceFile), nil
+	}
+	return target, nil
 }
 
 func (r *Repository) Notes(ctx context.Context) (<-chan *Note, <-chan error) {
