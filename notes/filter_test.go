@@ -16,7 +16,7 @@ func TestFilter(t *testing.T) {
 	filteredOutNote2 := &noteMock{}
 
 	t.Run("should remove not matched notes", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 		notesChannel := make(chan notes.Note, 3)
 		notesChannel <- filteredOutNote1
