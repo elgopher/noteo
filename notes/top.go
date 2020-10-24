@@ -14,19 +14,7 @@ func Top(ctx context.Context, limit int, notes <-chan Note, less Less) (note <-c
 	go func() {
 		defer close(out)
 		defer close(errs)
-		var slice []Note
-	main:
-		for {
-			select {
-			case note, ok := <-notes:
-				if !ok {
-					break main
-				}
-				slice = append(slice, note)
-			case <-ctx.Done():
-				return
-			}
-		}
+		slice := collectNotes(ctx, notes)
 		sort.Slice(slice, func(i, j int) bool {
 			l, err := less(slice[i], slice[j])
 			if err != nil {
@@ -42,6 +30,21 @@ func Top(ctx context.Context, limit int, notes <-chan Note, less Less) (note <-c
 		}
 	}()
 	return out, errs
+}
+
+func collectNotes(ctx context.Context, notes <-chan Note) []Note {
+	var collectedNotes []Note
+	for {
+		select {
+		case note, ok := <-notes:
+			if !ok {
+				return collectedNotes
+			}
+			collectedNotes = append(collectedNotes, note)
+		case <-ctx.Done():
+			return nil
+		}
+	}
 }
 
 type Less func(i, j Note) (bool, error)
