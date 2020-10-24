@@ -15,13 +15,7 @@ func Top(ctx context.Context, limit int, notes <-chan Note, less Less) (note <-c
 		defer close(out)
 		defer close(errs)
 		slice := collectNotes(ctx, notes)
-		sort.Slice(slice, func(i, j int) bool {
-			l, err := less(slice[i], slice[j])
-			if err != nil {
-				errs <- fmt.Errorf("comparing notes failed %s and %s: %v", slice[i].Path(), slice[j].Path(), err)
-			}
-			return l
-		})
+		sortNotes(slice, less, errs)
 		if len(slice) > limit {
 			slice = slice[:limit]
 		}
@@ -45,6 +39,16 @@ func collectNotes(ctx context.Context, notes <-chan Note) []Note {
 			return nil
 		}
 	}
+}
+
+func sortNotes(slice []Note, less Less, errs chan<- error) {
+	sort.Slice(slice, func(i, j int) bool {
+		l, err := less(slice[i], slice[j])
+		if err != nil {
+			errs <- fmt.Errorf("comparing notes failed %s and %s: %v", slice[i].Path(), slice[j].Path(), err)
+		}
+		return l
+	})
 }
 
 type Less func(i, j Note) (bool, error)
