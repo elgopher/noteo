@@ -31,19 +31,22 @@ func TestFilter(t *testing.T) {
 		})
 		close(notesChannel)
 		// then
-		var output []notes.Note
-	main:
-		for {
-			select {
-			case n, ok := <-filtered:
-				if !ok {
-					break main
-				}
-				output = append(output, n)
-			case err := <-errors:
-				require.NoError(t, err)
-			}
-		}
+		output := collectNotes(t, filtered, errors)
 		assert.Equal(t, []notes.Note{expectedNote}, output)
 	})
+}
+
+func collectNotes(t *testing.T, filtered <-chan notes.Note, errors <-chan error) []notes.Note {
+	var output []notes.Note
+	for {
+		select {
+		case n, ok := <-filtered:
+			if !ok {
+				return output
+			}
+			output = append(output, n)
+		case err := <-errors:
+			require.NoError(t, err)
+		}
+	}
 }

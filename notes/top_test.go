@@ -42,19 +42,7 @@ func TestTop(t *testing.T) {
 		})
 		close(notesChannel)
 		// then
-		var output []notes.Note
-	main:
-		for {
-			select {
-			case n, ok := <-topNotes:
-				if !ok {
-					break main
-				}
-				output = append(output, n)
-			case err := <-errors:
-				require.NoError(t, err)
-			}
-		}
+		output := collectNotes(t, topNotes, errors)
 		assert.Equal(t, []notes.Note{note2019, note2020, note2021}, output)
 	})
 
@@ -70,19 +58,7 @@ func TestTop(t *testing.T) {
 		})
 		close(notesChannel)
 		// then
-		var output []notes.Note
-	main:
-		for {
-			select {
-			case n, ok := <-topNotes:
-				if !ok {
-					break main
-				}
-				output = append(output, n)
-			case err := <-errors:
-				require.NoError(t, err)
-			}
-		}
+		output := collectNotes(t, topNotes, errors)
 		assert.Equal(t, []notes.Note{note2020}, output)
 	})
 }
