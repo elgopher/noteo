@@ -20,7 +20,7 @@ func (w Printer) PrintFile(file string) {
 	writer.Reset()
 }
 
-func (w Printer) PrintComand(file string) {
+func (w Printer) PrintCommand(file string) {
 	writer := ansiterm.Writer(w)
 	writer.SetStyle(ansiterm.Bold)
 	_, _ = fmt.Fprint(writer, file)
