@@ -61,11 +61,11 @@ func (r *Repository) Add(text string) (string, error) {
 	}
 	file := filepath.Join(r.dir, name+".md")
 	_, err = os.Stat(file)
-	existingFile := err == nil
 	if err != nil && !os.IsNotExist(err) {
 		return "", err
 	}
-	if existingFile {
+	fileAlreadyExists := err == nil
+	if fileAlreadyExists {
 		file = filepath.Join(r.dir, name+"-"+generateUUID()[:7]+".md")
 	}
 	rel, err := filepath.Rel(r.dir, file)
