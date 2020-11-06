@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jacekolszak/noteo/date"
 	"github.com/jacekolszak/noteo/note"
 	"github.com/jacekolszak/noteo/repository"
 	"github.com/stretchr/testify/assert"
@@ -114,62 +113,6 @@ second`,
 				assert.Equal(t, test.expectedFilename, file)
 			})
 		}
-	})
-}
-
-func TestRepository_TagFileWith(t *testing.T) {
-	t.Run("should add yaml front matter for file without it", func(t *testing.T) {
-		dir, repo := repo(t)
-		file := filepath.Join(dir, "gopher.md")
-		writeFile(t, file, "text")
-		// when
-		ok, err := repo.TagFileWith("gopher.md", "gopher")
-		// then
-		require.NoError(t, err)
-		assert.True(t, ok)
-		// and
-		bytes, err := ioutil.ReadFile(file)
-		require.NoError(t, err)
-		assert.Equal(t, `---
-Tags: gopher
----
-text`, string(bytes))
-	})
-
-	t.Run("should update front matter", func(t *testing.T) {
-		dir, repo := repo(t)
-		file := filepath.Join(dir, "gopher.md")
-		writeFile(t, file, "---\nTags: foo\n---\n\ntext")
-		// when
-		ok, err := repo.TagFileWith("gopher.md", "bar")
-		// then
-		require.NoError(t, err)
-		assert.True(t, ok)
-		// and
-		bytes, err := ioutil.ReadFile(file)
-		require.NoError(t, err)
-		assert.Equal(t, "---\nTags: foo bar\n---\n\ntext", string(bytes))
-	})
-
-	t.Run("should set tag with relative date", func(t *testing.T) {
-		date.SetNow(func() time.Time {
-			return time.Date(2020, 9, 10, 16, 30, 11, 0, time.FixedZone("CEST", 60*60*2))
-		})
-		dir, repo := repo(t)
-		file, err := repo.Add("test")
-		require.NoError(t, err)
-		// when
-		ok, err := repo.TagFileWith(file, "deadline:now")
-		// then
-		require.NoError(t, err)
-		assert.True(t, ok)
-		// and
-		bytes, err := ioutil.ReadFile(filepath.Join(dir, file))
-		require.NoError(t, err)
-		assert.Equal(t, `---
-Tags: deadline:2020-09-10T16:30:11+02:00
----
-test`, string(bytes))
 	})
 }
 

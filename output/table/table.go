@@ -164,13 +164,17 @@ func (m modifiedColumn) printHeader(_ opts, writer *ansiterm.TabWriter) {
 func (m modifiedColumn) printValue(note notes.Note, opts opts, writer *ansiterm.TabWriter) {
 	modified, err := note.Modified()
 	if err != nil {
-		errString := err.Error()
-		errString = strings.ReplaceAll(errString, "\t", " ")
-		_, _ = fmt.Fprint(writer, errString)
+		writeError(err, writer)
 		return
 	}
 	formatted := date.FormatWithType(modified, opts.dateFormat)
 	_, _ = fmt.Fprint(writer, formatted)
+}
+
+func writeError(err error, writer *ansiterm.TabWriter) {
+	errString := err.Error()
+	errString = strings.ReplaceAll(errString, "\t", " ")
+	_, _ = fmt.Fprint(writer, errString)
 }
 
 type createdColumn struct{}
@@ -182,9 +186,7 @@ func (c createdColumn) printHeader(_ opts, writer *ansiterm.TabWriter) {
 func (c createdColumn) printValue(note notes.Note, opts opts, writer *ansiterm.TabWriter) {
 	created, err := note.Created()
 	if err != nil {
-		errString := err.Error()
-		errString = strings.ReplaceAll(errString, "\t", " ")
-		_, _ = fmt.Fprint(writer, errString)
+		writeError(err, writer)
 		return
 	}
 	modified := date.FormatWithType(created, opts.dateFormat)

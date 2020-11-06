@@ -307,6 +307,10 @@ func (h *frontMatter) setTag(newTag tag.Tag) error {
 	if err := h.ensureParsed(); err != nil {
 		return err
 	}
+	normalizedTag, err := newTag.MakeDateAbsolute()
+	if err == nil {
+		newTag = normalizedTag
+	}
 	for i, oldTag := range h.tags {
 		if oldTag.Name() == newTag.Name() {
 			h.tags[i] = newTag
