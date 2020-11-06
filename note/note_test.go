@@ -88,6 +88,54 @@ func TestNote_Created(t *testing.T) {
 	})
 }
 
+func TestNote_Tags(t *testing.T) {
+	t.Run("should return tags", func(t *testing.T) {
+		tests := map[string]struct {
+			content      string
+			expectedTags []string
+		}{
+			"no tags": {
+				content: "",
+			},
+			"empty tags": {
+				content: "---\nTags: \n---",
+			},
+			"one tag": {
+				content:      "---\nTags: tag\n---",
+				expectedTags: []string{"tag"},
+			},
+			"space separated": {
+				content:      "---\nTags: tag1 tag2\n---",
+				expectedTags: []string{"tag1", "tag2"},
+			},
+			"comma separated": {
+				content:      "---\nTags: tag1,tag2\n---",
+				expectedTags: []string{"tag1", "tag2"},
+			},
+			"list": {
+				content:      "---\nTags: [tag1, tag2]\n---",
+				expectedTags: []string{"tag1", "tag2"},
+			},
+			"tag with space in the beginning": {
+				content:      "---\nTags: [\" tag\"]\n---",
+				expectedTags: []string{"tag"},
+			},
+			"tag with space on the end": {
+				content:      "---\nTags: [\"tag \"]\n---",
+				expectedTags: []string{"tag"},
+			},
+		}
+		for name, test := range tests {
+			t.Run(name, func(t *testing.T) {
+				filename := writeTempFile(t, test.content)
+				n := note.New(filename)
+				// expect
+				assertTags(t, n, test.expectedTags...)
+			})
+		}
+	})
+}
+
 func TestNote_SetTag(t *testing.T) {
 	t.Run("should add tag for file without front matter", func(t *testing.T) {
 		filename := writeTempFile(t, "text")
