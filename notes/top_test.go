@@ -67,12 +67,12 @@ func sortByModified(i, j notes.Note) (bool, error) {
 
 func TestTagDateAsc(t *testing.T) {
 	note2019 := &noteMock{
-		tags: []tag.Tag{
+		tags: []string{
 			"deadline:2019-01-01",
 		},
 	}
 	note2020 := &noteMock{
-		tags: []tag.Tag{
+		tags: []string{
 			"deadline:2020-03-03",
 		},
 	}
@@ -102,12 +102,12 @@ func TestTagDateAsc(t *testing.T) {
 
 func TestTagNumberAsc(t *testing.T) {
 	noteWithPriority1 := &noteMock{
-		tags: []tag.Tag{
+		tags: []string{
 			"priority:1",
 		},
 	}
 	noteWithPriority2 := &noteMock{
-		tags: []tag.Tag{
+		tags: []string{
 			"priority:2",
 		},
 	}
@@ -139,7 +139,7 @@ type noteMock struct {
 	modified   time.Time
 	created    time.Time
 	path       string
-	tags       []tag.Tag
+	tags       []string
 	stringTags []string
 	text       string
 }
@@ -157,7 +157,15 @@ func (n *noteMock) Path() string {
 }
 
 func (n *noteMock) Tags() ([]tag.Tag, error) {
-	return n.tags, nil
+	tags := make([]tag.Tag, len(n.tags))
+	for _, name := range n.tags {
+		newTag, err := tag.New(name)
+		if err != nil {
+			return nil, err
+		}
+		tags = append(tags, newTag)
+	}
+	return tags, nil
 }
 
 func (n *noteMock) StringTags() ([]string, error) {

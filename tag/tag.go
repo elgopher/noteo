@@ -14,15 +14,17 @@ var validName = regexp.MustCompile(`^\S+$`)
 
 func New(name string) (Tag, error) {
 	if !validName.MatchString(name) {
-		return "", fmt.Errorf("%s is not a valid tag", name)
+		return Tag{}, fmt.Errorf("%s is not a valid tag", name)
 	}
-	return Tag(name), nil
+	return Tag{tag: name}, nil
 }
 
-type Tag string
+type Tag struct {
+	tag string
+}
 
 func (t Tag) Name() string {
-	s := string(t)
+	s := t.tag
 	if strings.Contains(s, ":") {
 		return s[:strings.Index(s, ":")]
 	}
@@ -30,7 +32,7 @@ func (t Tag) Name() string {
 }
 
 func (t Tag) Value() (string, error) {
-	s := string(t)
+	s := t.tag
 	if !strings.Contains(s, ":") {
 		return "", fmt.Errorf("tag %s is not name:value", t)
 	}
@@ -73,7 +75,15 @@ func (t Tag) MakeDateAbsolute() (Tag, error) {
 		return t, err
 	}
 	if relativeDate.Hour() == 0 && relativeDate.Minute() == 0 && relativeDate.Second() == 0 && relativeDate.Nanosecond() == 0 {
-		return Tag(t.Name() + ":" + relativeDate.Format("2006-01-02")), nil
+		return Tag{
+			tag: t.Name() + ":" + relativeDate.Format("2006-01-02"),
+		}, nil
 	}
-	return Tag(t.Name() + ":" + relativeDate.Format(time.RFC3339)), nil
+	return Tag{
+		tag: t.Name() + ":" + relativeDate.Format(time.RFC3339),
+	}, nil
+}
+
+func (t Tag) String() string {
+	return t.tag
 }

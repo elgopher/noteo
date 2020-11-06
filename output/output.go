@@ -9,7 +9,7 @@ func StringTags(note notes.Note) ([]string, error) {
 		return nil, err
 	}
 	for _, t := range tags {
-		ret = append(ret, string(t))
+		ret = append(ret, t.String())
 	}
 	return ret, nil
 }

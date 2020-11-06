@@ -17,9 +17,9 @@ func TestNew(t *testing.T) {
 		}
 		for _, name := range names {
 			t.Run(name, func(t *testing.T) {
-				tagg, err := tag.New(name)
+				newTag, err := tag.New(name)
 				assert.Error(t, err)
-				assert.Equal(t, tag.Tag(""), tagg)
+				assert.Equal(t, tag.Tag{}, newTag)
 			})
 		}
 	})
@@ -56,7 +56,9 @@ func TestTag_MakeDateAbsolute(t *testing.T) {
 			require.NoError(t, err)
 			tg, err = tg.MakeDateAbsolute()
 			require.NoError(t, err)
-			assert.Equal(t, tag.Tag(test.expectedTag), tg)
+			expectedTag, err := tag.New(test.expectedTag)
+			require.NoError(t, err)
+			assert.Equal(t, expectedTag, tg)
 		})
 	}
 }

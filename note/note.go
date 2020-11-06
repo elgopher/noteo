@@ -339,7 +339,7 @@ func (h *frontMatter) unsetTagRegex(regex *regexp.Regexp) error {
 		return err
 	}
 	for i, oldTag := range h.tags {
-		if regex.MatchString(string(oldTag)) {
+		if regex.MatchString(oldTag.String()) {
 			h.tags = append(h.tags[:i], h.tags[i+1:]...)
 			return nil
 		}
@@ -354,7 +354,7 @@ func (h *frontMatter) marshal() (string, error) {
 	}
 	var stringTags []string
 	for _, t := range tags {
-		stringTags = append(stringTags, string(t))
+		stringTags = append(stringTags, t.String())
 	}
 	serializedTags := strings.Join(stringTags, " ")
 	_, tagsWereGivenBefore := h.mapSlice.at("Tags")

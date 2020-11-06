@@ -60,7 +60,7 @@ func Tag(t string) Predicate {
 			return false, err
 		}
 		for _, anotherTag := range tags {
-			if string(anotherTag) == t {
+			if anotherTag.String() == t {
 				return true, nil
 			}
 		}
@@ -75,7 +75,7 @@ func NoTag(t string) Predicate {
 			return false, err
 		}
 		for _, anotherTag := range tags {
-			if string(anotherTag) == t {
+			if anotherTag.String() == t {
 				return false, nil
 			}
 		}
@@ -90,7 +90,7 @@ func TagGrep(regex *regexp.Regexp) Predicate {
 			return false, err
 		}
 		for _, t := range tags {
-			if regex.MatchString(string(t)) {
+			if regex.MatchString(t.String()) {
 				return true, nil
 			}
 		}
