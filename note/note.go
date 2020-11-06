@@ -1,4 +1,4 @@
-package repository
+package note
 
 import (
 	"fmt"
@@ -26,11 +26,11 @@ type Note struct {
 	body            *body
 }
 
-func newNote(path string, modified time.Time) *Note {
+func New(path string, modified time.Time) *Note {
 	original := &originalContent{path: path}
 	frontMatter := &frontMatter{
 		path:     path,
-		original: original.Meta,
+		original: original.FrontMatter,
 		mapSlice: mapSlice{},
 	}
 	body := &body{
@@ -65,19 +65,19 @@ func (n *Note) Text() (string, error) {
 	return n.body.text()
 }
 
-func (n *Note) setTag(newTag tag.Tag) error {
+func (n *Note) SetTag(newTag tag.Tag) error {
 	return n.frontMatter.setTag(newTag)
 }
 
-func (n *Note) unsetTag(newTag tag.Tag) error {
+func (n *Note) UnsetTag(newTag tag.Tag) error {
 	return n.frontMatter.unsetTag(newTag)
 }
 
-func (n *Note) unsetTagRegex(regex *regexp.Regexp) error {
+func (n *Note) UnsetTagRegex(regex *regexp.Regexp) error {
 	return n.frontMatter.unsetTagRegex(regex)
 }
 
-func (n *Note) updateLink(from, to string) error {
+func (n *Note) UpdateLink(from, to string) error {
 	body, err := n.body.text()
 	if err != nil {
 		return err
@@ -105,7 +105,7 @@ func (n *Note) updateLink(from, to string) error {
 	return nil
 }
 
-func (n *Note) save() (bool, error) {
+func (n *Note) Save() (bool, error) {
 	frontMatter, err := n.frontMatter.marshal()
 	if err != nil {
 		return false, err
@@ -130,10 +130,10 @@ func (n *Note) save() (bool, error) {
 }
 
 type originalContent struct {
-	path string
-	once sync.Once
-	meta string
-	body string
+	path        string
+	once        sync.Once
+	frontMatter string
+	body        string
 }
 
 func (c *originalContent) ensureLoaded() error {
@@ -145,16 +145,16 @@ func (c *originalContent) ensureLoaded() error {
 			return
 		}
 		defer file.Close()
-		c.meta, c.body, err = parser.Parse(file)
+		c.frontMatter, c.body, err = parser.Parse(file)
 	})
 	return err
 }
 
-func (c *originalContent) Meta() (string, error) {
+func (c *originalContent) FrontMatter() (string, error) {
 	if err := c.ensureLoaded(); err != nil {
 		return "", err
 	}
-	return c.meta, nil
+	return c.frontMatter, nil
 }
 
 func (c *originalContent) Body() (string, error) {
@@ -165,7 +165,7 @@ func (c *originalContent) Body() (string, error) {
 }
 
 func (c *originalContent) Full() (string, error) {
-	meta, err := c.Meta()
+	frontMatter, err := c.FrontMatter()
 	if err != nil {
 		return "", err
 	}
@@ -173,7 +173,7 @@ func (c *originalContent) Full() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return meta + body, nil
+	return frontMatter + body, nil
 }
 
 type frontMatter struct {
@@ -225,12 +225,12 @@ func (s mapSlice) isEmpty() bool {
 func (h *frontMatter) ensureParsed() error {
 	var err error
 	h.once.Do(func() {
-		meta, e := h.original()
+		frontMatter, e := h.original()
 		if e != nil {
 			err = e
 			return
 		}
-		if e := yaml.Unmarshal([]byte(meta), &h.mapSlice); e != nil {
+		if e := yaml.Unmarshal([]byte(frontMatter), &h.mapSlice); e != nil {
 			err = fmt.Errorf("%s YAML front matter unmarshal failed: %v", h.path, e)
 			return
 		}
