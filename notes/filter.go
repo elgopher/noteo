@@ -248,10 +248,10 @@ func Grep(expr string) (Predicate, error) {
 		return nil, err
 	}
 	return func(note Note) (bool, error) {
-		text, err := note.Text()
+		body, err := note.Body()
 		if err != nil {
 			return false, err
 		}
-		return regex.MatchString(text), nil
+		return regex.MatchString(body), nil
 	}, nil
 }

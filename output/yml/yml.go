@@ -19,7 +19,7 @@ func (f Formatter) Footer() string {
 }
 
 func (f Formatter) Note(note notes.Note) string {
-	text, err := note.Text()
+	body, err := note.Body()
 	if err != nil {
 		return err.Error()
 	}
@@ -39,7 +39,7 @@ func (f Formatter) Note(note notes.Note) string {
 		File:     note.Path(),
 		Modified: modified,
 		Created:  created,
-		Text:     text,
+		Text:     body,
 		Tags:     tags,
 	}
 	bytes, err := yaml.Marshal(n)

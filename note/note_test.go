@@ -147,6 +147,38 @@ func TestNote_Save(t *testing.T) {
 	})
 }
 
+func TestNote_Body(t *testing.T) {
+	t.Run("should return body when note does not have a front matter", func(t *testing.T) {
+		filename := writeTempFile(t, "body")
+		n := note.New(filename)
+		// when
+		actual, err := n.Body()
+		// then
+		require.NoError(t, err)
+		assert.Equal(t, "body", actual)
+	})
+
+	t.Run("should return body when note has a front matter", func(t *testing.T) {
+		filename := writeTempFile(t, "---\nTags: tag\n---\nbody")
+		n := note.New(filename)
+		// when
+		actual, err := n.Body()
+		// then
+		require.NoError(t, err)
+		assert.Equal(t, "body", actual)
+	})
+
+	t.Run("should return empty body", func(t *testing.T) {
+		filename := writeTempFile(t, "---\nTags: tag\n---\n")
+		n := note.New(filename)
+		// when
+		actual, err := n.Body()
+		// then
+		require.NoError(t, err)
+		assert.Empty(t, actual)
+	})
+}
+
 func writeTempFile(t *testing.T, content string) string {
 	file, err := ioutil.TempFile("", "noteo-test")
 	require.NoError(t, err)

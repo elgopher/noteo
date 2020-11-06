@@ -149,10 +149,10 @@ func (s beginningColumn) printHeader(opts opts, writer *ansiterm.TabWriter) {
 	_, _ = fmt.Fprint(writer, format("BEGINNING", 34))
 }
 func (s beginningColumn) printValue(note notes.Note, opts opts, writer *ansiterm.TabWriter) {
-	text, _ := note.Text()
+	body, _ := note.Body()
 	writer.SetStyle(ansiterm.Bold)
 	defer writer.Reset()
-	_, _ = fmt.Fprint(writer, format(beginning(text), 34))
+	_, _ = fmt.Fprint(writer, format(beginning(body), 34))
 }
 
 type modifiedColumn struct{}
