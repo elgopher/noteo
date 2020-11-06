@@ -20,37 +20,57 @@ var tagSeparator = regexp.MustCompile(`[,\s]+`)
 
 type Note struct {
 	path            string
-	modified        time.Time
+	modified        func() (time.Time, error)
 	originalContent *originalContent
 	frontMatter     *frontMatter
 	body            *body
 }
 
-func New(path string, modified time.Time) *Note {
+func New(path string) *Note {
+	return newWithModifiedFunc(path, readModifiedFunc(path))
+}
+
+func readModifiedFunc(path string) func() (time.Time, error) {
+	return func() (modTime time.Time, err error) {
+		var stat os.FileInfo
+		stat, err = os.Stat(path)
+		if err != nil {
+			return
+		}
+		modTime = stat.ModTime()
+		return
+	}
+}
+
+func newWithModifiedFunc(path string, modified func() (time.Time, error)) *Note {
 	original := &originalContent{path: path}
-	frontMatter := &frontMatter{
-		path:     path,
-		original: original.FrontMatter,
-		mapSlice: mapSlice{},
-	}
-	body := &body{
-		original: original.Body,
-	}
 	return &Note{
 		path:            path,
 		modified:        modified,
 		originalContent: original,
-		frontMatter:     frontMatter,
-		body:            body,
+		frontMatter: &frontMatter{
+			path:     path,
+			original: original.FrontMatter,
+			mapSlice: mapSlice{},
+		},
+		body: &body{
+			original: original.Body,
+		},
 	}
+}
+
+func NewWithModified(path string, modified time.Time) *Note {
+	return newWithModifiedFunc(path, func() (time.Time, error) {
+		return modified, nil
+	})
 }
 
 func (n *Note) Path() string {
 	return n.path
 }
 
-func (n *Note) Modified() time.Time {
-	return n.modified
+func (n *Note) Modified() (time.Time, error) {
+	return n.modified()
 }
 
 func (n *Note) Created() (time.Time, error) {

@@ -37,9 +37,7 @@ func TestTop(t *testing.T) {
 		notesChannel <- note2021
 		notesChannel <- note2019
 		// when
-		topNotes, errors := notes.Top(ctx, 10, notesChannel, func(i, j notes.Note) (bool, error) {
-			return i.Modified().Before(j.Modified()), nil
-		})
+		topNotes, errors := notes.Top(ctx, 10, notesChannel, sortByModified)
 		close(notesChannel)
 		// then
 		output := collectNotes(t, topNotes, errors)
@@ -53,14 +51,18 @@ func TestTop(t *testing.T) {
 		notesChannel <- note2020
 		notesChannel <- note2021
 		// when
-		topNotes, errors := notes.Top(ctx, 1, notesChannel, func(i, j notes.Note) (bool, error) {
-			return i.Modified().Before(j.Modified()), nil
-		})
+		topNotes, errors := notes.Top(ctx, 1, notesChannel, sortByModified)
 		close(notesChannel)
 		// then
 		output := collectNotes(t, topNotes, errors)
 		assert.Equal(t, []notes.Note{note2020}, output)
 	})
+}
+
+func sortByModified(i, j notes.Note) (bool, error) {
+	iModified, _ := i.Modified()
+	jModified, _ := j.Modified()
+	return iModified.Before(jModified), nil
 }
 
 func TestTagDateAsc(t *testing.T) {
@@ -142,8 +144,8 @@ type noteMock struct {
 	text       string
 }
 
-func (n *noteMock) Modified() time.Time {
-	return n.modified
+func (n *noteMock) Modified() (time.Time, error) {
+	return n.modified, nil
 }
 
 func (n *noteMock) Created() (time.Time, error) {

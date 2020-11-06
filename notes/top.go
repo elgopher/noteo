@@ -54,11 +54,27 @@ func sortNotes(slice []Note, less Less, errs chan<- error) {
 type Less func(i, j Note) (bool, error)
 
 var ModifiedDesc Less = func(i, j Note) (bool, error) {
-	return i.Modified().After(j.Modified()), nil
+	firstModified, e := i.Modified()
+	if e != nil {
+		return false, e
+	}
+	secondModified, e := j.Modified()
+	if e != nil {
+		return false, e
+	}
+	return firstModified.After(secondModified), nil
 }
 
 var ModifiedAsc Less = func(i, j Note) (bool, error) {
-	return i.Modified().Before(j.Modified()), nil
+	firstModified, e := i.Modified()
+	if e != nil {
+		return false, e
+	}
+	secondModified, e := j.Modified()
+	if e != nil {
+		return false, e
+	}
+	return firstModified.Before(secondModified), nil
 }
 
 var CreatedDesc Less = func(first, second Note) (bool, error) {

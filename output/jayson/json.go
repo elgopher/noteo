@@ -27,13 +27,17 @@ func (f Formatter) Note(note notes.Note) string {
 	if err != nil {
 		return err.Error()
 	}
+	modified, err := note.Modified()
+	if err != nil {
+		return err.Error()
+	}
 	tags, err := output.StringTags(note)
 	if err != nil {
 		return err.Error()
 	}
 	n := noteToMarshal{
 		File:     note.Path(),
-		Modified: note.Modified(),
+		Modified: modified,
 		Created:  created,
 		Text:     text,
 		Tags:     tags,
