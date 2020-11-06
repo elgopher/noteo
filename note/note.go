@@ -89,12 +89,12 @@ func (n *Note) SetTag(newTag tag.Tag) error {
 	return n.frontMatter.setTag(newTag)
 }
 
-func (n *Note) UnsetTag(newTag tag.Tag) error {
-	return n.frontMatter.unsetTag(newTag)
+func (n *Note) RemoveTag(newTag tag.Tag) error {
+	return n.frontMatter.removeTag(newTag)
 }
 
-func (n *Note) UnsetTagRegex(regex *regexp.Regexp) error {
-	return n.frontMatter.unsetTagRegex(regex)
+func (n *Note) RemoveTagRegex(regex *regexp.Regexp) error {
+	return n.frontMatter.removeTagRegex(regex)
 }
 
 func (n *Note) UpdateLink(from, to string) error {
@@ -321,7 +321,7 @@ func (h *frontMatter) setTag(newTag tag.Tag) error {
 	return nil
 }
 
-func (h *frontMatter) unsetTag(newTag tag.Tag) error {
+func (h *frontMatter) removeTag(newTag tag.Tag) error {
 	if err := h.ensureParsed(); err != nil {
 		return err
 	}
@@ -334,7 +334,7 @@ func (h *frontMatter) unsetTag(newTag tag.Tag) error {
 	return nil
 }
 
-func (h *frontMatter) unsetTagRegex(regex *regexp.Regexp) error {
+func (h *frontMatter) removeTagRegex(regex *regexp.Regexp) error {
 	if err := h.ensureParsed(); err != nil {
 		return err
 	}

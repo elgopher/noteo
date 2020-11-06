@@ -84,6 +84,41 @@ func TestNote_SetTag(t *testing.T) {
 	})
 }
 
+func TestNote_RemoveTag(t *testing.T) {
+	t.Run("should remove tag", func(t *testing.T) {
+		filename := writeTempFile(t, "---\nTags: tag another\n---\ntext")
+		n := note.New(filename)
+		tagToRemove := newTag(t, "tag")
+		// when
+		err := n.RemoveTag(tagToRemove)
+		// then
+		require.NoError(t, err)
+		assertTags(t, n, "another")
+	})
+
+	t.Run("should remove last remaining tag", func(t *testing.T) {
+		filename := writeTempFile(t, "---\nTags: tag\n---\ntext")
+		n := note.New(filename)
+		tagToRemove := newTag(t, "tag")
+		// when
+		err := n.RemoveTag(tagToRemove)
+		// then
+		require.NoError(t, err)
+		assertNoTags(t, n)
+	})
+
+	t.Run("removing missing tag does nothing", func(t *testing.T) {
+		filename := writeTempFile(t, "content")
+		n := note.New(filename)
+		missingTag := newTag(t, "missing")
+		// when
+		err := n.RemoveTag(missingTag)
+		// then
+		require.NoError(t, err)
+		assertNoTags(t, n)
+	})
+}
+
 func TestNote_Save(t *testing.T) {
 	t.Run("should add yaml front matter for file without it", func(t *testing.T) {
 		filename := writeTempFile(t, "text")
@@ -125,9 +160,14 @@ func assertFileEquals(t *testing.T, filename, expectedContent string) {
 	assert.Equal(t, expectedContent, string(bytes))
 }
 
+func assertNoTags(t *testing.T, n *note.Note) {
+	assertTags(t, n)
+}
+
 func assertTags(t *testing.T, n *note.Note, expectedTags ...string) {
 	tags, err := n.Tags()
 	require.NoError(t, err)
+	require.Equal(t, len(expectedTags), len(tags), "different tags len")
 	for i, expectedTag := range expectedTags {
 		assert.Equal(t, newTag(t, expectedTag), tags[i])
 	}
