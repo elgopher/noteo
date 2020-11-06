@@ -77,7 +77,7 @@ func TestNote_SetTag(t *testing.T) {
 		filename := writeTempFile(t, "")
 		n := note.New(filename)
 		// when
-		err := n.SetTag("deadline:now")
+		err := n.SetTag(newTag(t, "deadline:now"))
 		// then
 		require.NoError(t, err)
 		assertTags(t, n, "deadline:2020-09-10T16:30:11+02:00")
@@ -88,9 +88,7 @@ func TestNote_Save(t *testing.T) {
 	t.Run("should add yaml front matter for file without it", func(t *testing.T) {
 		filename := writeTempFile(t, "text")
 		n := note.New(filename)
-		newTag, err := tag.New("tag")
-		require.NoError(t, err)
-		require.NoError(t, n.SetTag(newTag))
+		require.NoError(t, n.SetTag(newTag(t, "tag")))
 		// when
 		saved, err := n.Save()
 		// then
@@ -103,9 +101,7 @@ func TestNote_Save(t *testing.T) {
 	t.Run("should update front matter", func(t *testing.T) {
 		filename := writeTempFile(t, "---\nTags: foo\n---\n\ntext")
 		n := note.New(filename)
-		newTag, err := tag.New("tag")
-		require.NoError(t, err)
-		require.NoError(t, n.SetTag(newTag))
+		require.NoError(t, n.SetTag(newTag(t, "tag")))
 		// when
 		saved, err := n.Save()
 		// then
@@ -132,9 +128,13 @@ func assertFileEquals(t *testing.T, filename, expectedContent string) {
 func assertTags(t *testing.T, n *note.Note, expectedTags ...string) {
 	tags, err := n.Tags()
 	require.NoError(t, err)
-	for i, expectedTagString := range expectedTags {
-		expectedTag, err := tag.New(expectedTagString)
-		require.NoError(t, err)
-		assert.Equal(t, expectedTag, tags[i])
+	for i, expectedTag := range expectedTags {
+		assert.Equal(t, newTag(t, expectedTag), tags[i])
 	}
+}
+
+func newTag(t *testing.T, name string) tag.Tag {
+	createdTag, err := tag.New(name)
+	require.NoError(t, err)
+	return createdTag
 }
