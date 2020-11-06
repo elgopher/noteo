@@ -162,8 +162,15 @@ func (m modifiedColumn) printHeader(_ opts, writer *ansiterm.TabWriter) {
 }
 
 func (m modifiedColumn) printValue(note notes.Note, opts opts, writer *ansiterm.TabWriter) {
-	modified := date.FormatWithType(note.Modified(), opts.dateFormat)
-	_, _ = fmt.Fprint(writer, modified)
+	modified, err := note.Modified()
+	if err != nil {
+		errString := err.Error()
+		errString = strings.ReplaceAll(errString, "\t", " ")
+		_, _ = fmt.Fprint(writer, errString)
+		return
+	}
+	formatted := date.FormatWithType(modified, opts.dateFormat)
+	_, _ = fmt.Fprint(writer, formatted)
 }
 
 type createdColumn struct{}

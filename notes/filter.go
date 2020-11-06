@@ -192,7 +192,11 @@ func ModifiedAfter(modifiedAfter string) (Predicate, error) {
 		return nil, err
 	}
 	return func(note Note) (bool, error) {
-		return note.Modified().After(t), nil
+		modified, err := note.Modified()
+		if err != nil {
+			return false, err
+		}
+		return modified.After(t), nil
 	}, nil
 }
 
@@ -202,7 +206,11 @@ func ModifiedBefore(modifiedBefore string) (Predicate, error) {
 		return nil, err
 	}
 	return func(note Note) (bool, error) {
-		return note.Modified().Before(t), nil
+		modified, err := note.Modified()
+		if err != nil {
+			return false, err
+		}
+		return modified.Before(t), nil
 	}, nil
 }
 

@@ -7,7 +7,7 @@ import (
 )
 
 type Note interface {
-	Modified() time.Time
+	Modified() (time.Time, error)
 	Created() (time.Time, error)
 	Path() string
 	Tags() ([]tag.Tag, error)

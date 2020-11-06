@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"time"
 	"unicode"
 
 	"github.com/google/uuid"
@@ -91,11 +90,11 @@ func (r *Repository) TagFileWith(file string, newTag string) (bool, error) {
 	if !filepath.IsAbs(file) {
 		file = filepath.Join(r.dir, file)
 	}
-	note := note.New(file, time.Now())
-	if err := note.SetTag(t); err != nil {
+	n := note.New(file)
+	if err := n.SetTag(t); err != nil {
 		return false, err
 	}
-	return note.Save()
+	return n.Save()
 }
 
 func (r *Repository) UntagFile(file string, tagToRemove string) (bool, error) {
@@ -106,11 +105,11 @@ func (r *Repository) UntagFile(file string, tagToRemove string) (bool, error) {
 	if filepath.Ext(file) != ".md" {
 		return false, fmt.Errorf("%s has no *.md extension", file)
 	}
-	note := note.New(file, time.Now())
-	if err := note.UnsetTag(t); err != nil {
+	n := note.New(file)
+	if err := n.UnsetTag(t); err != nil {
 		return false, err
 	}
-	return note.Save()
+	return n.Save()
 }
 
 func (r *Repository) UntagFileRegex(file string, tagRegexToRemove string) (bool, error) {
@@ -121,11 +120,11 @@ func (r *Repository) UntagFileRegex(file string, tagRegexToRemove string) (bool,
 	if filepath.Ext(file) != ".md" {
 		return false, fmt.Errorf("%s has no *.md extension", file)
 	}
-	note := note.New(file, time.Now())
-	if err := note.UnsetTagRegex(regex); err != nil {
+	n := note.New(file)
+	if err := n.UnsetTagRegex(regex); err != nil {
 		return false, err
 	}
-	return note.Save()
+	return n.Save()
 }
 
 func (r *Repository) Move(ctx context.Context, source, target string) (<-chan *note.Note, <-chan bool, <-chan error) {
@@ -222,7 +221,7 @@ func (r *Repository) notes(ctx context.Context, dir string) (<-chan *note.Note, 
 					if err != nil {
 						return err
 					}
-					names <- note.New(relPath, info.ModTime())
+					names <- note.NewWithModified(relPath, info.ModTime())
 				}
 			}
 			return nil
