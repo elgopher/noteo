@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/jacekolszak/noteo/note"
 	"github.com/jacekolszak/noteo/notes"
 	"github.com/jacekolszak/noteo/repository"
 )
@@ -26,7 +27,7 @@ func repo(commandArgs []string) (*repository.Repository, error) {
 	return repository.ForWorkDir(wd)
 }
 
-func toNotes(all <-chan *repository.Note) <-chan notes.Note {
+func toNotes(all <-chan *note.Note) <-chan notes.Note {
 	ret := make(chan notes.Note)
 	go func() {
 		defer close(ret)

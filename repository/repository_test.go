@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/jacekolszak/noteo/date"
+	"github.com/jacekolszak/noteo/note"
 	"github.com/jacekolszak/noteo/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -231,7 +232,7 @@ func TestRepository_Move(t *testing.T) {
 	})
 }
 
-func assertSuccess(t *testing.T, ctx context.Context, notes <-chan *repository.Note, success <-chan bool, errors <-chan error) {
+func assertSuccess(t *testing.T, ctx context.Context, notes <-chan *note.Note, success <-chan bool, errors <-chan error) {
 	var successClosed, errorClosed, notesClosed bool
 	for !successClosed || !errorClosed || !notesClosed {
 		select {

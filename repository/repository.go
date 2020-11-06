@@ -14,6 +14,7 @@ import (
 	"unicode"
 
 	"github.com/google/uuid"
+	"github.com/jacekolszak/noteo/note"
 	"github.com/jacekolszak/noteo/parser"
 	"github.com/jacekolszak/noteo/tag"
 	godiacritics "gopkg.in/Regis24GmbH/go-diacritics.v2"
@@ -90,11 +91,11 @@ func (r *Repository) TagFileWith(file string, newTag string) (bool, error) {
 	if !filepath.IsAbs(file) {
 		file = filepath.Join(r.dir, file)
 	}
-	note := newNote(file, time.Now())
-	if err := note.setTag(t); err != nil {
+	note := note.New(file, time.Now())
+	if err := note.SetTag(t); err != nil {
 		return false, err
 	}
-	return note.save()
+	return note.Save()
 }
 
 func (r *Repository) UntagFile(file string, tagToRemove string) (bool, error) {
@@ -105,11 +106,11 @@ func (r *Repository) UntagFile(file string, tagToRemove string) (bool, error) {
 	if filepath.Ext(file) != ".md" {
 		return false, fmt.Errorf("%s has no *.md extension", file)
 	}
-	note := newNote(file, time.Now())
-	if err := note.unsetTag(t); err != nil {
+	note := note.New(file, time.Now())
+	if err := note.UnsetTag(t); err != nil {
 		return false, err
 	}
-	return note.save()
+	return note.Save()
 }
 
 func (r *Repository) UntagFileRegex(file string, tagRegexToRemove string) (bool, error) {
@@ -120,15 +121,15 @@ func (r *Repository) UntagFileRegex(file string, tagRegexToRemove string) (bool,
 	if filepath.Ext(file) != ".md" {
 		return false, fmt.Errorf("%s has no *.md extension", file)
 	}
-	note := newNote(file, time.Now())
-	if err := note.unsetTagRegex(regex); err != nil {
+	note := note.New(file, time.Now())
+	if err := note.UnsetTagRegex(regex); err != nil {
 		return false, err
 	}
-	return note.save()
+	return note.Save()
 }
 
-func (r *Repository) Move(ctx context.Context, source, target string) (<-chan *Note, <-chan bool, <-chan error) {
-	updated := make(chan *Note)
+func (r *Repository) Move(ctx context.Context, source, target string) (<-chan *note.Note, <-chan bool, <-chan error) {
+	updated := make(chan *note.Note)
 	errs := make(chan error)
 	success := make(chan bool)
 
@@ -163,12 +164,12 @@ func (r *Repository) Move(ctx context.Context, source, target string) (<-chan *N
 				if !ok {
 					return
 				}
-				err := note.updateLink(source, target)
+				err := note.UpdateLink(source, target)
 				if err != nil {
 					errs <- err
 					continue
 				}
-				ok, err = note.save()
+				ok, err = note.Save()
 				if err != nil {
 					errs <- err
 					continue
@@ -194,16 +195,16 @@ func addSourceFileToTargetIfTargetIsDirectory(source, target string) (string, er
 	return target, nil
 }
 
-func (r *Repository) Notes(ctx context.Context) (<-chan *Note, <-chan error) {
+func (r *Repository) Notes(ctx context.Context) (<-chan *note.Note, <-chan error) {
 	return r.notes(ctx, r.dir)
 }
 
-func (r *Repository) AllNotes(ctx context.Context) (<-chan *Note, <-chan error) {
+func (r *Repository) AllNotes(ctx context.Context) (<-chan *note.Note, <-chan error) {
 	return r.notes(ctx, r.root)
 }
 
-func (r *Repository) notes(ctx context.Context, dir string) (<-chan *Note, <-chan error) {
-	names := make(chan *Note)
+func (r *Repository) notes(ctx context.Context, dir string) (<-chan *note.Note, <-chan error) {
+	names := make(chan *note.Note)
 	errs := make(chan error)
 	go func() {
 		defer close(names)
@@ -221,7 +222,7 @@ func (r *Repository) notes(ctx context.Context, dir string) (<-chan *Note, <-cha
 					if err != nil {
 						return err
 					}
-					names <- newNote(relPath, info.ModTime())
+					names <- note.New(relPath, info.ModTime())
 				}
 			}
 			return nil
