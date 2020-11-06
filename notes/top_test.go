@@ -171,6 +171,6 @@ func (n *noteMock) Tags() ([]tag.Tag, error) {
 func (n *noteMock) StringTags() ([]string, error) {
 	return n.stringTags, nil
 }
-func (n *noteMock) Text() (string, error) {
+func (n *noteMock) Body() (string, error) {
 	return n.text, nil
 }

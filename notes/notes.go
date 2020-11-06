@@ -11,7 +11,7 @@ type Note interface {
 	Created() (time.Time, error)
 	Path() string
 	Tags() ([]tag.Tag, error)
-	Text() (string, error)
+	Body() (string, error)
 }
 
 func FindTagByName(note Note, name string) (tag.Tag, bool, error) {

@@ -81,7 +81,7 @@ func (n *Note) Tags() ([]tag.Tag, error) {
 	return n.frontMatter.Tags()
 }
 
-func (n *Note) Text() (string, error) {
+func (n *Note) Body() (string, error) {
 	return n.body.text()
 }
 
@@ -130,7 +130,7 @@ func (n *Note) Save() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	text, err := n.Text()
+	text, err := n.Body()
 	if err != nil {
 		return false, err
 	}
