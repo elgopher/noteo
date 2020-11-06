@@ -263,8 +263,10 @@ func (h *frontMatter) ensureParsed() error {
 				if tagsSlice[0] == "" {
 					tagsSlice = tagsSlice[1:]
 				}
-			case []string:
-				tagsSlice = v
+			case []interface{}:
+				for _, s := range v {
+					tagsSlice = append(tagsSlice, fmt.Sprintf("%s", s))
+				}
 			}
 			for _, t := range tagsSlice {
 				t = strings.Trim(t, " ")
