@@ -25,6 +25,14 @@ func TestNewWithModified(t *testing.T) {
 	})
 }
 
+func TestNote_Path(t *testing.T) {
+	t.Run("should return path", func(t *testing.T) {
+		n := note.New("path")
+		// expect
+		assert.Equal(t, "path", n.Path())
+	})
+}
+
 func TestNote_Modified(t *testing.T) {
 	t.Run("should return error for missing file", func(t *testing.T) {
 		n := note.New("missing")
@@ -56,6 +64,30 @@ func TestNote_Modified(t *testing.T) {
 	})
 }
 
+func TestNote_Created(t *testing.T) {
+	t.Run("should return zero value Time (1 Jan 1970) for note without Created tag", func(t *testing.T) {
+		filename := writeTempFile(t, "body")
+		n := note.New(filename)
+		// when
+		created, err := n.Created()
+		// then
+		require.NoError(t, err)
+		assert.Equal(t, time.Time{}, created)
+	})
+
+	t.Run("should return time from Created tag", func(t *testing.T) {
+		filename := writeTempFile(t, "---\nCreated: 2006-01-02\n---\nbody")
+		n := note.New(filename)
+		// when
+		created, err := n.Created()
+		// then
+		require.NoError(t, err)
+		expectedTime, err := date.Parse("2006-01-02")
+		require.NoError(t, err)
+		assert.Equal(t, expectedTime, created)
+	})
+}
+
 func TestNote_SetTag(t *testing.T) {
 	t.Run("should add tag for file without front matter", func(t *testing.T) {
 		filename := writeTempFile(t, "text")
@@ -81,6 +113,18 @@ func TestNote_SetTag(t *testing.T) {
 		// then
 		require.NoError(t, err)
 		assertTags(t, n, "deadline:2020-09-10T16:30:11+02:00")
+	})
+
+	t.Run("should update existing tag", func(t *testing.T) {
+		filename := writeTempFile(t, "---\nTags: tag:1\n---\nbody")
+		n := note.New(filename)
+		newTag, err := tag.New("tag:2")
+		require.NoError(t, err)
+		// when
+		err = n.SetTag(newTag)
+		// then
+		require.NoError(t, err)
+		assertTags(t, n, "tag:2")
 	})
 }
 
@@ -144,6 +188,16 @@ func TestNote_Save(t *testing.T) {
 		assert.True(t, saved)
 		// and
 		assertFileEquals(t, filename, "---\nTags: foo tag\n---\n\ntext")
+	})
+
+	t.Run("should not save file if nothing changed", func(t *testing.T) {
+		filename := writeTempFile(t, "text")
+		n := note.New(filename)
+		// when
+		saved, err := n.Save()
+		// then
+		assert.False(t, saved)
+		assert.NoError(t, err)
 	})
 }
 
