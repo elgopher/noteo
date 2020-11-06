@@ -7,21 +7,21 @@ import (
 	"regexp"
 )
 
-var yamlDividerRegex = regexp.MustCompile(`^---`)
+var frontMatterDividerRegex = regexp.MustCompile(`^---`)
 
-func Parse(reader io.Reader) (yml string, body string, err error) {
+func Parse(reader io.Reader) (frontMatter string, body string, err error) {
 	scanner := bufio.NewScanner(reader)
 	scanner.Split(spltLinesIncludeEOL)
 	if scanner.Scan() {
 		firstLine := scanner.Text()
-		yamel := ""
-		if yamlDividerRegex.MatchString(firstLine) {
-			yamel += firstLine
+		lines := ""
+		if frontMatterDividerRegex.MatchString(firstLine) {
+			lines += firstLine
 			for scanner.Scan() {
-				ymlLine := scanner.Text()
-				yamel += ymlLine
-				if yamlDividerRegex.MatchString(ymlLine) {
-					yml = yamel
+				line := scanner.Text()
+				lines += line
+				if frontMatterDividerRegex.MatchString(line) {
+					frontMatter = lines
 					for scanner.Scan() {
 						bodyLine := scanner.Text()
 						body += bodyLine
@@ -29,7 +29,7 @@ func Parse(reader io.Reader) (yml string, body string, err error) {
 					return
 				}
 			}
-			body = yamel
+			body = lines
 		} else {
 			body += firstLine
 			for scanner.Scan() {
