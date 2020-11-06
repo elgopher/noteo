@@ -23,27 +23,25 @@ type Note struct {
 	modified        time.Time
 	originalContent *originalContent
 	frontMatter     *frontMatter
-	text            *text
+	body            *body
 }
 
 func newNote(path string, modified time.Time) *Note {
-	content := &originalContent{
-		path: path,
-	}
+	original := &originalContent{path: path}
 	frontMatter := &frontMatter{
 		path:     path,
-		meta:     content.Meta,
+		original: original.Meta,
 		mapSlice: mapSlice{},
 	}
-	text := &text{
-		originalContent: content,
+	body := &body{
+		original: original.Body,
 	}
 	return &Note{
 		path:            path,
 		modified:        modified,
-		originalContent: content,
+		originalContent: original,
 		frontMatter:     frontMatter,
-		text:            text,
+		body:            body,
 	}
 }
 
@@ -64,7 +62,7 @@ func (n *Note) Tags() ([]tag.Tag, error) {
 }
 
 func (n *Note) Text() (string, error) {
-	return n.text.text()
+	return n.body.text()
 }
 
 func (n *Note) setTag(newTag tag.Tag) error {
@@ -80,7 +78,7 @@ func (n *Note) unsetTagRegex(regex *regexp.Regexp) error {
 }
 
 func (n *Note) updateLink(from, to string) error {
-	body, err := n.text.text()
+	body, err := n.body.text()
 	if err != nil {
 		return err
 	}
@@ -103,7 +101,7 @@ func (n *Note) updateLink(from, to string) error {
 		}
 		return s
 	})
-	n.text.setText(body)
+	n.body.setText(body)
 	return nil
 }
 
@@ -180,7 +178,7 @@ func (c *originalContent) Full() (string, error) {
 
 type frontMatter struct {
 	path     string
-	meta     func() (string, error)
+	original func() (string, error)
 	once     sync.Once
 	mapSlice mapSlice
 	created  time.Time
@@ -227,7 +225,7 @@ func (s mapSlice) isEmpty() bool {
 func (h *frontMatter) ensureParsed() error {
 	var err error
 	h.once.Do(func() {
-		meta, e := h.meta()
+		meta, e := h.original()
 		if e != nil {
 			err = e
 			return
@@ -349,17 +347,20 @@ func (h *frontMatter) marshal() (string, error) {
 	return "---\n" + string(marshaledBytes) + "---\n", nil
 }
 
-type text struct {
-	body            string
-	once            sync.Once
-	originalContent *originalContent
+// TODO this code has multiple problems:
+// 1. When two go-routines runs text() and setText() then the result is unknown
+// 2. When setText is executed first and then text() overrides already modified body
+type body struct {
+	body     string
+	once     sync.Once
+	original func() (string, error)
 }
 
-func (t *text) text() (string, error) {
+func (t *body) text() (string, error) {
 	var err error
 	t.once.Do(func() {
 		var body string
-		body, err = t.originalContent.Body()
+		body, err = t.original()
 		if err != nil {
 			return
 		}
@@ -368,6 +369,6 @@ func (t *text) text() (string, error) {
 	return t.body, err
 }
 
-func (t *text) setText(body string) {
+func (t *body) setText(body string) {
 	t.body = body
 }
