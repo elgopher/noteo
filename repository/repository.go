@@ -102,7 +102,7 @@ func (r *Repository) UntagFile(file string, tagToRemove string) (bool, error) {
 		return false, fmt.Errorf("%s has no *.md extension", file)
 	}
 	n := note.New(file)
-	if err := n.UnsetTag(t); err != nil {
+	if err := n.RemoveTag(t); err != nil {
 		return false, err
 	}
 	return n.Save()
@@ -117,7 +117,7 @@ func (r *Repository) UntagFileRegex(file string, tagRegexToRemove string) (bool,
 		return false, fmt.Errorf("%s has no *.md extension", file)
 	}
 	n := note.New(file)
-	if err := n.UnsetTagRegex(regex); err != nil {
+	if err := n.RemoveTagRegex(regex); err != nil {
 		return false, err
 	}
 	return n.Save()
