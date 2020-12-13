@@ -102,27 +102,54 @@ func (n *Note) UpdateLink(from, to string) error {
 	if err != nil {
 		return err
 	}
+
+	relativeFrom, err := n.relativePath(from)
+	if err != nil {
+		return err
+	}
+
+	var returnedError error
 	markdownLinkRegexp := regexp.MustCompile(`(\[[^][]+])\(([^()]+)\)`) // TODO does not take into account code fences
 	body = markdownLinkRegexp.ReplaceAllStringFunc(body, func(s string) string {
 		linkPath := markdownLinkRegexp.FindStringSubmatch(s)[2]
-		fullLinkPath := filepath.Join(filepath.Dir(n.path), linkPath)
-		if strings.HasPrefix(fullLinkPath, from) {
-			newTo, err := filepath.Rel(filepath.Dir(n.path), to)
-			if err != nil {
-				panic(err)
-			}
-			rel, err := filepath.Rel(from, fullLinkPath)
-			if err != nil {
-				panic(err)
-			}
-			newTo = filepath.Join(newTo, rel)
-			newTo = filepath.ToSlash(newTo)
+		relativeLinkPath, err := n.relativePath(linkPath)
+		if err != nil {
+			returnedError = err
+			return s
+		}
+		if relativeFrom == relativeLinkPath {
+			return markdownLinkRegexp.ReplaceAllString(s, `$1(`+to+`)`)
+		}
+		if isAncestorPath(relativeFrom, relativeLinkPath) {
+			newTo := to + strings.TrimPrefix(relativeLinkPath, relativeFrom)
+			newTo = filepath.ToSlash(newTo) // always use slashes, even on Windows
 			return markdownLinkRegexp.ReplaceAllString(s, `$1(`+newTo+`)`)
 		}
 		return s
 	})
+	if returnedError != nil {
+		return returnedError
+	}
 	n.body.setText(body)
 	return nil
+}
+
+func isAncestorPath(ancestor string, descendant string) bool {
+	rel, err := filepath.Rel(ancestor, descendant)
+	if err != nil {
+		return false
+	}
+	return filepath.Dir(rel) == "."
+}
+
+// Returns relative path to note path
+func (n *Note) relativePath(p string) (string, error) {
+	dir := filepath.Dir(n.path)
+	relativePath := p
+	if !filepath.IsAbs(relativePath) {
+		relativePath = filepath.Join(dir, p)
+	}
+	return filepath.Rel(dir, relativePath)
 }
 
 func (n *Note) Save() (bool, error) {

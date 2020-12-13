@@ -1,8 +1,10 @@
 package note_test
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -281,10 +283,102 @@ func TestNote_Body(t *testing.T) {
 	})
 }
 
+func TestNote_UpdateLink(t *testing.T) {
+	t.Run("should not change the body if link is missing", func(t *testing.T) {
+		filename := writeTempFile(t, "body")
+		n := note.New(filename)
+		// when
+		err := n.UpdateLink("from", "to")
+		require.NoError(t, err)
+		// then
+		body, err := n.Body()
+		require.NoError(t, err)
+		assert.Equal(t, "body", body)
+	})
+
+	tests := []func(string) string{
+		func(filename string) string {
+			return "from.md"
+		},
+		func(filename string) string {
+			return filepath.Join(filepath.Dir(filename), "from.md")
+		},
+		func(filename string) string {
+			return filepath.Join("..", filepath.Base(filepath.Dir(filename)), "from.md")
+		},
+	}
+
+	t.Run("should update markdown link when from parameter is", func(t *testing.T) {
+		for _, from := range tests {
+			filename := writeTempFile(t, "[link](from.md)")
+			n := note.New(filename)
+			t.Run(from(filename), func(t *testing.T) {
+				// when
+				err := n.UpdateLink(from(filename), "to.md")
+				require.NoError(t, err)
+				// then
+				body, err := n.Body()
+				require.NoError(t, err)
+				assert.Equal(t, "[link](to.md)", body)
+			})
+		}
+	})
+
+	t.Run("should update markdown link when link path is", func(t *testing.T) {
+		for _, linkPath := range tests {
+			filename := writeTempFileWithFunction(t, func(filename string) string {
+				return fmt.Sprintf("[link](%s)", linkPath(filename))
+			})
+			n := note.New(filename)
+			t.Run(linkPath(filename), func(t *testing.T) {
+				// when
+				err := n.UpdateLink("from.md", "to.md")
+				require.NoError(t, err)
+				// then
+				body, err := n.Body()
+				require.NoError(t, err)
+				assert.Equal(t, "[link](to.md)", body)
+			})
+		}
+	})
+
+	t.Run("should update markdown link when directory is renamed", func(t *testing.T) {
+		filename := writeTempFile(t, "[link](source/file.md)")
+		n := note.New(filename)
+		// when
+		err := n.UpdateLink("source", "target")
+		require.NoError(t, err)
+		// then
+		body, err := n.Body()
+		require.NoError(t, err)
+		assert.Equal(t, "[link](target/file.md)", body)
+	})
+
+	t.Run("should not update markdown link", func(t *testing.T) {
+		filename := writeTempFile(t, "[link](other.md)")
+		n := note.New(filename)
+		// when
+		err := n.UpdateLink("from.md", "to.md")
+		require.NoError(t, err)
+		// then
+		body, err := n.Body()
+		require.NoError(t, err)
+		assert.Equal(t, "[link](other.md)", body)
+	})
+
+}
+
 func writeTempFile(t *testing.T, content string) string {
 	file, err := ioutil.TempFile("", "noteo-test")
 	require.NoError(t, err)
 	require.NoError(t, ioutil.WriteFile(file.Name(), []byte(content), os.ModePerm))
+	return file.Name()
+}
+
+func writeTempFileWithFunction(t *testing.T, content func(filename string) string) string {
+	file, err := ioutil.TempFile("", "noteo-test")
+	require.NoError(t, err)
+	require.NoError(t, ioutil.WriteFile(file.Name(), []byte(content(file.Name())), os.ModePerm))
 	return file.Name()
 }
 
