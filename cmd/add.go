@@ -13,6 +13,7 @@ import (
 	"github.com/jacekolszak/noteo/config"
 	"github.com/jacekolszak/noteo/repository"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 var add = &cobra.Command{
@@ -36,24 +37,13 @@ var add = &cobra.Command{
 			return err
 		}
 		cfg := config.New(repoConfig)
-		var text string
-		if len(cmd.Flags().Args()) == 0 {
-			template := newFileTemplate(time.Now()) + "\n"
-			tmpFile := filepath.Join(os.TempDir(), uuid.New().String()+" .md")
-			if err := ioutil.WriteFile(tmpFile, []byte(template), 0664); err != nil {
-				return err
-			}
-			text, err = textFromEditor(tmpFile, cfg.EditorCommand())
-			if err != nil {
-				return err
-			}
-			if text == template {
-				fmt.Println("no new file added")
-				return nil
-			}
-		} else {
-			template := newFileTemplate(time.Now())
-			text = template + strings.Join(cmd.Flags().Args(), " ")
+		text, err := readNoteText(cmd.Flags(), cfg)
+		if err != nil {
+			return err
+		}
+		if text == "" {
+			fmt.Println("no new file added")
+			return nil
 		}
 		f, err := repo.Add(text)
 		if err != nil {
@@ -64,6 +54,29 @@ var add = &cobra.Command{
 		printer.Println(" created")
 		return nil
 	},
+}
+
+func readNoteText(flags *pflag.FlagSet, cfg *config.Config) (string, error) {
+	var text string
+	if len(flags.Args()) == 0 {
+		template := newFileTemplate(time.Now()) + "\n"
+		tmpFile := filepath.Join(os.TempDir(), uuid.New().String()+" .md")
+		if err := ioutil.WriteFile(tmpFile, []byte(template), 0664); err != nil {
+			return "", err
+		}
+		text, err := textFromEditor(tmpFile, cfg.EditorCommand())
+		if err != nil {
+			return "", err
+		}
+		if text == template {
+			return "", nil
+		}
+		return text, nil
+	} else {
+		template := newFileTemplate(time.Now())
+		text = template + strings.Join(flags.Args(), " ")
+	}
+	return text, nil
 }
 
 func textFromEditor(file, editorCommand string) (string, error) {
