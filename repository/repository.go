@@ -185,7 +185,8 @@ func addSourceFileToTargetIfTargetIsDirectory(source, target string) (string, er
 	}
 	if !os.IsNotExist(err) && targetStat.IsDir() {
 		_, sourceFile := filepath.Split(source)
-		return filepath.Join(target, sourceFile), nil
+		p := filepath.Join(target, sourceFile)
+		return filepath.ToSlash(p), nil
 	}
 	return target, nil
 }
