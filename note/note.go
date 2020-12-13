@@ -12,8 +12,6 @@ import (
 	"github.com/jacekolszak/noteo/tag"
 )
 
-var tagSeparator = regexp.MustCompile(`[,\s]+`)
-
 type Note struct {
 	path            string
 	modified        func() (time.Time, error)

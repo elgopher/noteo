@@ -1,9 +1,10 @@
 package note
 
 import (
-	"github.com/jacekolszak/noteo/parser"
 	"os"
 	"sync"
+
+	"github.com/jacekolszak/noteo/parser"
 )
 
 type originalContent struct {
