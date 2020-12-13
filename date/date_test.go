@@ -61,7 +61,8 @@ func TestParseAbsolute(t *testing.T) {
 }
 
 func TestFormatRFC2822(t *testing.T) {
-	given := time.Date(2020, 10, 15, 16, 30, 10, 30, time.FixedZone("CEST", 60*60*2))
+	zone := time.FixedZone("CEST", 60*60*2)
+	given := time.Date(2020, 10, 15, 16, 30, 10, 30, zone)
 	// when
 	f := date.FormatRFC2822(given)
 	// then
@@ -69,7 +70,8 @@ func TestFormatRFC2822(t *testing.T) {
 }
 
 func TestFormatISO8601(t *testing.T) {
-	given := time.Date(2020, 10, 15, 16, 30, 10, 30, time.FixedZone("CEST", 60*60*2))
+	zone := time.FixedZone("CEST", 60*60*2)
+	given := time.Date(2020, 10, 15, 16, 30, 10, 30, zone)
 	// when
 	f := date.FormatISO8601(given)
 	// then
