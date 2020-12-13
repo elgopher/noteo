@@ -2,13 +2,14 @@ package note
 
 import (
 	"fmt"
-	"github.com/jacekolszak/noteo/date"
-	"github.com/jacekolszak/noteo/tag"
-	"gopkg.in/yaml.v2"
 	"regexp"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/jacekolszak/noteo/date"
+	"github.com/jacekolszak/noteo/tag"
+	"gopkg.in/yaml.v2"
 )
 
 type frontMatter struct {
@@ -71,27 +72,12 @@ func (h *frontMatter) ensureParsed() error {
 		}
 		tags, ok := h.mapSlice.at("Tags")
 		if ok {
-			var tagsSlice []string
-			switch v := tags.(type) {
-			case string:
-				tagsSlice = tagSeparator.Split(v, -1)
-				if tagsSlice[0] == "" {
-					tagsSlice = tagsSlice[1:]
-				}
-			case []interface{}:
-				for _, s := range v {
-					tagsSlice = append(tagsSlice, fmt.Sprintf("%s", s))
-				}
+			tagsSlice, e := parseTags(tags)
+			if e != nil {
+				err = e
+				return
 			}
-			for _, t := range tagsSlice {
-				t = strings.Trim(t, " ")
-				ta, e := tag.New(t)
-				if err != nil {
-					err = e
-					return
-				}
-				h.tags = append(h.tags, ta)
-			}
+			h.tags = append(h.tags, tagsSlice...)
 		}
 		created, ok := h.mapSlice.at("Created")
 		if ok {
@@ -104,6 +90,36 @@ func (h *frontMatter) ensureParsed() error {
 		}
 	})
 	return err
+}
+
+func parseTags(tags interface{}) ([]tag.Tag, error) {
+	var result []tag.Tag
+	for _, t := range stringTags(tags) {
+		t = strings.Trim(t, " ")
+		ta, err := tag.New(t)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, ta)
+	}
+	return result, nil
+}
+
+func stringTags(tags interface{}) []string {
+	tagSeparator := regexp.MustCompile(`[,\s]+`)
+	var stringTags []string
+	switch v := tags.(type) {
+	case string:
+		stringTags = tagSeparator.Split(v, -1)
+		if stringTags[0] == "" {
+			stringTags = stringTags[1:]
+		}
+	case []interface{}:
+		for _, s := range v {
+			stringTags = append(stringTags, fmt.Sprintf("%s", s))
+		}
+	}
+	return stringTags
 }
 
 func (h *frontMatter) Created() (time.Time, error) {
