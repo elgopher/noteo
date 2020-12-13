@@ -98,54 +98,61 @@ func (n *Note) UpdateLink(from, to string) error {
 	if err != nil {
 		return err
 	}
-
-	relativeFrom, err := n.relativePath(from)
+	newBody, err := replaceLinks{notePath: n.path, from: from, to: to}.run(body)
 	if err != nil {
 		return err
 	}
+	n.body.setText(newBody)
+	return nil
+}
 
-	var returnedError error
+type replaceLinks struct {
+	notePath string
+	from, to string
+}
+
+func (u replaceLinks) run(body string) (newBody string, returnedError error) {
+	relativeFrom, err := u.relativePath(u.from)
+	if err != nil {
+		return "", err
+	}
 	markdownLinkRegexp := regexp.MustCompile(`(\[[^][]+])\(([^()]+)\)`) // TODO does not take into account code fences
-	body = markdownLinkRegexp.ReplaceAllStringFunc(body, func(s string) string {
+	newBody = markdownLinkRegexp.ReplaceAllStringFunc(body, func(s string) string {
 		linkPath := markdownLinkRegexp.FindStringSubmatch(s)[2]
-		relativeLinkPath, err := n.relativePath(linkPath)
+		relativeLinkPath, err := u.relativePath(linkPath)
 		if err != nil {
 			returnedError = err
 			return s
 		}
 		if relativeFrom == relativeLinkPath {
-			return markdownLinkRegexp.ReplaceAllString(s, `$1(`+to+`)`)
+			return markdownLinkRegexp.ReplaceAllString(s, `$1(`+u.to+`)`)
 		}
 		if isAncestorPath(relativeFrom, relativeLinkPath) {
-			newTo := to + strings.TrimPrefix(relativeLinkPath, relativeFrom)
+			newTo := u.to + strings.TrimPrefix(relativeLinkPath, relativeFrom)
 			newTo = filepath.ToSlash(newTo) // always use slashes, even on Windows
 			return markdownLinkRegexp.ReplaceAllString(s, `$1(`+newTo+`)`)
 		}
 		return s
 	})
-	if returnedError != nil {
-		return returnedError
-	}
-	n.body.setText(body)
-	return nil
-}
-
-func isAncestorPath(ancestor string, descendant string) bool {
-	rel, err := filepath.Rel(ancestor, descendant)
-	if err != nil {
-		return false
-	}
-	return filepath.Dir(rel) == "."
+	return
 }
 
 // Returns relative path to note path
-func (n *Note) relativePath(p string) (string, error) {
-	dir := filepath.Dir(n.path)
+func (u replaceLinks) relativePath(p string) (string, error) {
+	dir := filepath.Dir(u.notePath)
 	relativePath := p
 	if !filepath.IsAbs(relativePath) {
 		relativePath = filepath.Join(dir, p)
 	}
 	return filepath.Rel(dir, relativePath)
+}
+
+func isAncestorPath(relativeAncestorPath string, relativeDescendantPath string) bool {
+	rel, err := filepath.Rel(relativeAncestorPath, relativeDescendantPath)
+	if err != nil {
+		return false
+	}
+	return filepath.Dir(rel) == "."
 }
 
 func (n *Note) Save() (bool, error) {
