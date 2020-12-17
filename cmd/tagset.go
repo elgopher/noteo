@@ -3,9 +3,7 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"os"
 
-	"github.com/jacekolszak/noteo/repository"
 	"github.com/spf13/cobra"
 )
 
@@ -22,11 +20,7 @@ func tagSet() *cobra.Command {
 			if name == "" {
 				return fmt.Errorf("no name given using -n flag")
 			}
-			wd, err := os.Getwd()
-			if err != nil {
-				return err
-			}
-			repo, err := repository.ForWorkDir(wd)
+			repo, err := workingDirRepository()
 			if err != nil {
 				return err
 			}

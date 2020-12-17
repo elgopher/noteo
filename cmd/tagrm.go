@@ -3,7 +3,6 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"os"
 
 	"github.com/jacekolszak/noteo/repository"
 	"github.com/spf13/cobra"
@@ -56,18 +55,6 @@ func tagRm() *cobra.Command {
 	tagRm.Flags().StringVarP(&name, "name", "n", "", "short name without space. Can have form of name:number-or-date")
 	tagRm.Flags().StringVar(&grep, "grep", "", "name regular expression")
 	return tagRm
-}
-
-func workingDirRepository() (*repository.Repository, error) {
-	wd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-	repo, err := repository.ForWorkDir(wd)
-	if err != nil {
-		return nil, err
-	}
-	return repo, nil
 }
 
 type untagFile func(file string) (bool, error)
