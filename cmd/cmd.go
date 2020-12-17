@@ -27,6 +27,18 @@ func repo(commandArgs []string) (*repository.Repository, error) {
 	return repository.ForWorkDir(wd)
 }
 
+func workingDirRepository() (*repository.Repository, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	repo, err := repository.ForWorkDir(wd)
+	if err != nil {
+		return nil, err
+	}
+	return repo, nil
+}
+
 func toNotes(all <-chan *note.Note) <-chan notes.Note {
 	ret := make(chan notes.Note)
 	go func() {

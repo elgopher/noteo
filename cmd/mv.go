@@ -3,9 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
 
-	"github.com/jacekolszak/noteo/repository"
 	"github.com/spf13/cobra"
 )
 
@@ -15,11 +13,7 @@ var mv = &cobra.Command{
 	Args:  cobra.ExactArgs(2),
 	Short: "Move note - EXPERIMENTAL (update links if necessary)",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		wd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-		repo, err := repository.ForWorkDir(wd)
+		repo, err := workingDirRepository()
 		if err != nil {
 			return err
 		}

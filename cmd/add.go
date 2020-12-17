@@ -11,7 +11,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jacekolszak/noteo/config"
-	"github.com/jacekolszak/noteo/repository"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -24,11 +23,7 @@ var add = &cobra.Command{
 		"create", "new",
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		wd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-		repo, err := repository.ForWorkDir(wd)
+		repo, err := workingDirRepository()
 		if err != nil {
 			return err
 		}
