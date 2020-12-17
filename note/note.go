@@ -177,28 +177,29 @@ func (n *Note) Save() (bool, error) {
 	return true, nil
 }
 
-// TODO this code has multiple problems:
-// 1. When two go-routines runs text() and setText() then the result is unknown
-// 2. When setText is executed first and then text() overrides already modified body
 type body struct {
-	body     string
-	once     sync.Once
+	body     *string
 	original func() (string, error)
+	mutex    sync.Mutex
 }
 
 func (t *body) text() (string, error) {
-	var err error
-	t.once.Do(func() {
-		var body string
-		body, err = t.original()
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	if t.body == nil {
+		body, err := t.original()
 		if err != nil {
-			return
+			return "", err
 		}
-		t.body = body
-	})
-	return t.body, err
+		t.body = &body
+	}
+	return *t.body, nil
 }
 
 func (t *body) setText(body string) {
-	t.body = body
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	t.body = &body
 }
