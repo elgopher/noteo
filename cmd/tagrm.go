@@ -19,32 +19,19 @@ func tagRm() *cobra.Command {
 		Use:   "rm",
 		Short: "Remove tags from notes",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if name == "" && grep == "" {
-				return fmt.Errorf("no name given using -n flag or regex with --grep flag")
-			}
-			wd, err := os.Getwd()
+			repo, err := workingDirRepository()
 			if err != nil {
 				return err
 			}
-			repo, err := repository.ForWorkDir(wd)
+			untagFile, err := untagFileFunc(name, grep, repo)
 			if err != nil {
 				return err
 			}
-			var untagFile func(file string) (bool, error)
-			if name != "" {
-				untagFile = func(file string) (bool, error) {
-					return repo.UntagFile(file, name)
-				}
-			} else {
-				untagFile = func(file string) (bool, error) {
-					return repo.UntagFileRegex(file, grep)
-				}
-			}
-			tagFileWith := func(file string) {
-				ok, err := untagFile(file)
+			removeFileTags := func(file string) {
+				updated, err := untagFile(file)
 				if err != nil {
 					_, _ = fmt.Fprintln(cmd.ErrOrStderr(), "skipping:", err)
-				} else if ok {
+				} else if updated {
 					printer := NewPrinter()
 					printer.PrintFile(file)
 					printer.Println(" updated")
@@ -55,12 +42,12 @@ func tagRm() *cobra.Command {
 				scanner.Split(bufio.ScanLines)
 				for scanner.Scan() {
 					file := scanner.Text()
-					tagFileWith(file)
+					removeFileTags(file)
 				}
 				return nil
 			}
 			for _, file := range args {
-				tagFileWith(file)
+				removeFileTags(file)
 			}
 			return nil
 		},
@@ -69,4 +56,33 @@ func tagRm() *cobra.Command {
 	tagRm.Flags().StringVarP(&name, "name", "n", "", "short name without space. Can have form of name:number-or-date")
 	tagRm.Flags().StringVar(&grep, "grep", "", "name regular expression")
 	return tagRm
+}
+
+func workingDirRepository() (*repository.Repository, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	repo, err := repository.ForWorkDir(wd)
+	if err != nil {
+		return nil, err
+	}
+	return repo, nil
+}
+
+type untagFile func(file string) (bool, error)
+
+func untagFileFunc(name string, grep string, repo *repository.Repository) (untagFile, error) {
+	if name == "" && grep == "" {
+		return nil, fmt.Errorf("no name given using -n flag or regex with --grep flag")
+	}
+	if name != "" {
+		return func(file string) (bool, error) {
+			return repo.UntagFile(file, name)
+		}, nil
+	} else {
+		return func(file string) (bool, error) {
+			return repo.UntagFileRegex(file, grep)
+		}, nil
+	}
 }
