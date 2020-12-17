@@ -188,12 +188,48 @@ func (c *lsCommand) RunE(cmd *cobra.Command, args []string) error {
 
 func (c *lsCommand) filterPredicates() ([]notes.Predicate, error) {
 	var predicates []notes.Predicate
+	for _, createPredicates := range []func() ([]notes.Predicate, error){
+		c.tagFilterPredicates,
+		c.notagFilterPredicates,
+		c.tagGrepPredicates,
+		c.tagGreaterPredicates,
+		c.tagLowerPredicates,
+		c.tagAfterPredicates,
+		c.tagBeforePredicates,
+		c.notagsPredicates,
+		c.modifiedAfterPredicates,
+		c.modifiedBeforePredicates,
+		c.createdAfterPredicates,
+		c.createdBeforePredicates,
+		c.grepPredicates,
+	} {
+		p, err := createPredicates()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p...)
+	}
+	return predicates, nil
+}
+
+func (c *lsCommand) tagFilterPredicates() ([]notes.Predicate, error) {
+	var predicates []notes.Predicate
 	for _, t := range c.tagFilter {
 		predicates = append(predicates, notes.Tag(t))
 	}
+	return predicates, nil
+}
+
+func (c *lsCommand) notagFilterPredicates() ([]notes.Predicate, error) {
+	var predicates []notes.Predicate
 	for _, t := range c.notagFilter {
 		predicates = append(predicates, notes.NoTag(t))
 	}
+	return predicates, nil
+}
+
+func (c *lsCommand) tagGrepPredicates() ([]notes.Predicate, error) {
+	var predicates []notes.Predicate
 	for _, grep := range c.tagGrep {
 		regex, err := regexp.Compile(grep)
 		if err != nil {
@@ -201,6 +237,11 @@ func (c *lsCommand) filterPredicates() ([]notes.Predicate, error) {
 		}
 		predicates = append(predicates, notes.TagGrep(regex))
 	}
+	return predicates, nil
+}
+
+func (c *lsCommand) tagGreaterPredicates() ([]notes.Predicate, error) {
+	var predicates []notes.Predicate
 	for _, greater := range c.tagGreater {
 		p, err := notes.TagGreater(greater)
 		if err != nil {
@@ -208,6 +249,11 @@ func (c *lsCommand) filterPredicates() ([]notes.Predicate, error) {
 		}
 		predicates = append(predicates, p)
 	}
+	return predicates, nil
+}
+
+func (c *lsCommand) tagLowerPredicates() ([]notes.Predicate, error) {
+	var predicates []notes.Predicate
 	for _, lower := range c.tagLower {
 		p, err := notes.TagLower(lower)
 		if err != nil {
@@ -215,6 +261,11 @@ func (c *lsCommand) filterPredicates() ([]notes.Predicate, error) {
 		}
 		predicates = append(predicates, p)
 	}
+	return predicates, nil
+}
+
+func (c *lsCommand) tagAfterPredicates() ([]notes.Predicate, error) {
+	var predicates []notes.Predicate
 	for _, after := range c.tagAfter {
 		p, err := notes.TagAfter(after)
 		if err != nil {
@@ -222,6 +273,11 @@ func (c *lsCommand) filterPredicates() ([]notes.Predicate, error) {
 		}
 		predicates = append(predicates, p)
 	}
+	return predicates, nil
+}
+
+func (c *lsCommand) tagBeforePredicates() ([]notes.Predicate, error) {
+	var predicates []notes.Predicate
 	for _, before := range c.tagBefore {
 		p, err := notes.TagBefore(before)
 		if err != nil {
@@ -229,9 +285,19 @@ func (c *lsCommand) filterPredicates() ([]notes.Predicate, error) {
 		}
 		predicates = append(predicates, p)
 	}
+	return predicates, nil
+}
+
+func (c *lsCommand) notagsPredicates() ([]notes.Predicate, error) {
+	var predicates []notes.Predicate
 	if c.noTags {
 		predicates = append(predicates, notes.NoTags())
 	}
+	return predicates, nil
+}
+
+func (c *lsCommand) modifiedAfterPredicates() ([]notes.Predicate, error) {
+	var predicates []notes.Predicate
 	if c.modifiedAfter != "" {
 		p, err := notes.ModifiedAfter(c.modifiedAfter)
 		if err != nil {
@@ -239,6 +305,11 @@ func (c *lsCommand) filterPredicates() ([]notes.Predicate, error) {
 		}
 		predicates = append(predicates, p)
 	}
+	return predicates, nil
+}
+
+func (c *lsCommand) modifiedBeforePredicates() ([]notes.Predicate, error) {
+	var predicates []notes.Predicate
 	if c.modifiedBefore != "" {
 		p, err := notes.ModifiedBefore(c.modifiedBefore)
 		if err != nil {
@@ -246,6 +317,11 @@ func (c *lsCommand) filterPredicates() ([]notes.Predicate, error) {
 		}
 		predicates = append(predicates, p)
 	}
+	return predicates, nil
+}
+
+func (c *lsCommand) createdAfterPredicates() ([]notes.Predicate, error) {
+	var predicates []notes.Predicate
 	if c.createdAfter != "" {
 		p, err := notes.CreatedAfter(c.createdAfter)
 		if err != nil {
@@ -253,6 +329,11 @@ func (c *lsCommand) filterPredicates() ([]notes.Predicate, error) {
 		}
 		predicates = append(predicates, p)
 	}
+	return predicates, nil
+}
+
+func (c *lsCommand) createdBeforePredicates() ([]notes.Predicate, error) {
+	var predicates []notes.Predicate
 	if c.createdBefore != "" {
 		p, err := notes.CreatedBefore(c.createdBefore)
 		if err != nil {
@@ -260,6 +341,11 @@ func (c *lsCommand) filterPredicates() ([]notes.Predicate, error) {
 		}
 		predicates = append(predicates, p)
 	}
+	return predicates, nil
+}
+
+func (c *lsCommand) grepPredicates() ([]notes.Predicate, error) {
+	var predicates []notes.Predicate
 	if c.grep != "" {
 		p, err := notes.Grep(c.grep)
 		if err != nil {
