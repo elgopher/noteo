@@ -159,8 +159,7 @@ func (r *Repository) Move(ctx context.Context, source, target string) (<-chan *n
 				if !ok {
 					return
 				}
-				err := note.UpdateLink(source, target)
-				if err != nil {
+				if err := note.UpdateLink(source, target); err != nil {
 					errs <- err
 					continue
 				}
@@ -274,26 +273,13 @@ func generateFilename(text string) (string, error) {
 		return "", err
 	}
 	name := body
-	name = strings.TrimLeft(name, "\n")
-	if strings.Contains(name, "\n") {
-		name = name[:strings.Index(name, "\n")]
-	}
-	name = strings.Trim(name, "\n")
+	name = firstLine(name)
 	name = godiacritics.Normalize(name)
-	notAllowedChars := regexp.MustCompile(`[^a-zA-Z0-9.\- ]`)
-	name = notAllowedChars.ReplaceAllString(name, "")
+	name = removeNotAllowedChars(name)
 	name = strings.Trim(name, " ")
 	if len(name) > 30 {
-		scanner := bufio.NewScanner(strings.NewReader(name))
-		scanner.Split(bufio.ScanWords)
-		scanner.Scan() // skip first word
-		for scanner.Scan() {
-			word := scanner.Text()
-			r := rune(word[0])
-			if unicode.IsUpper(r) {
-				name = word
-				break
-			}
+		if word := capitalLetterWordExcludingFirstWord(name); word != "" {
+			name = word
 		}
 	}
 	if len(name) > 30 {
@@ -305,6 +291,35 @@ func generateFilename(text string) (string, error) {
 		name = "unknown"
 	}
 	return name, nil
+}
+
+func firstLine(name string) string {
+	name = strings.TrimLeft(name, "\n")
+	if strings.Contains(name, "\n") {
+		name = name[:strings.Index(name, "\n")]
+	}
+	name = strings.Trim(name, "\n")
+	return name
+}
+
+func removeNotAllowedChars(name string) string {
+	notAllowedChars := regexp.MustCompile(`[^a-zA-Z0-9.\- ]`)
+	name = notAllowedChars.ReplaceAllString(name, "")
+	return name
+}
+
+func capitalLetterWordExcludingFirstWord(name string) string {
+	scanner := bufio.NewScanner(strings.NewReader(name))
+	scanner.Split(bufio.ScanWords)
+	scanner.Scan()
+	for scanner.Scan() {
+		word := scanner.Text()
+		r := rune(word[0])
+		if unicode.IsUpper(r) {
+			return word
+		}
+	}
+	return ""
 }
 
 func generateUUID() string {
