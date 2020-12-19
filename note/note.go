@@ -153,6 +153,7 @@ func isAncestorPath(relativeAncestorPath string, relativeDescendantPath string) 
 	return filepath.Dir(rel) == "."
 }
 
+// Save returns true if file was modified.
 func (n *Note) Save() (bool, error) {
 	frontMatter, err := n.frontMatter.marshal()
 	if err != nil {
