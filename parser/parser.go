@@ -11,7 +11,7 @@ var frontMatterDividerRegex = regexp.MustCompile(`^---`)
 
 func Parse(reader io.Reader) (frontMatter string, body string, err error) {
 	scanner := bufio.NewScanner(reader)
-	scanner.Split(spltLinesIncludeEOL)
+	scanner.Split(splitLinesIncludeEOL)
 	if scanner.Scan() {
 		firstLine := scanner.Text()
 		lines := ""
@@ -40,7 +40,7 @@ func Parse(reader io.Reader) (frontMatter string, body string, err error) {
 	return
 }
 
-func spltLinesIncludeEOL(data []byte, atEOF bool) (advance int, token []byte, err error) {
+func splitLinesIncludeEOL(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	if atEOF && len(data) == 0 {
 		return 0, nil, nil
 	}
