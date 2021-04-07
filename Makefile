@@ -25,5 +25,5 @@ release:
 	cd releases/linux_amd64 && tar cfz noteo_linux.tar.gz noteo
 	env GOOS=darwin GOARCH=amd64 go build -o releases/darwin_amd64/noteo
 	cd releases/darwin_amd64 && tar cfz noteo_macos.tar.gz noteo
-	env GOOS=windows GOARCH=amd64 go build -o releases/windows_amd64/noteo
-	cd releases/windows_amd64 && zip noteo_windows.zip noteo
+	env GOOS=windows GOARCH=amd64 go build -o releases/windows_amd64/noteo.exe
+	cd releases/windows_amd64 && zip noteo_windows.zip noteo.exe
