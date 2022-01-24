@@ -6,9 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/jacekolszak/noteo/note"
-	"github.com/jacekolszak/noteo/notes"
-	"github.com/jacekolszak/noteo/repository"
+	"github.com/elgopher/noteo/note"
+	"github.com/elgopher/noteo/notes"
+	"github.com/elgopher/noteo/repository"
 )
 
 func repo(commandArgs []string) (*repository.Repository, error) {

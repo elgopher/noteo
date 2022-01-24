@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jacekolszak/noteo/tag"
+	"github.com/elgopher/noteo/tag"
 )
 
 type Note struct {

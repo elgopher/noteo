@@ -1,7 +1,7 @@
 package quiet
 
 import (
-	"github.com/jacekolszak/noteo/notes"
+	"github.com/elgopher/noteo/notes"
 )
 
 type Formatter struct {

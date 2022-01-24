@@ -1,4 +1,4 @@
-module github.com/jacekolszak/noteo
+module github.com/elgopher/noteo
 
 go 1.14
 

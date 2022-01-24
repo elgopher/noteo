@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/jacekolszak/noteo/cmd"
+	"github.com/elgopher/noteo/cmd"
 )
 
 func main() {

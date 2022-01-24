@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/elgopher/noteo/config"
 	"github.com/google/uuid"
-	"github.com/jacekolszak/noteo/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )

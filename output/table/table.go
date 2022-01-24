@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jacekolszak/noteo/date"
-	"github.com/jacekolszak/noteo/notes"
-	"github.com/jacekolszak/noteo/output"
+	"github.com/elgopher/noteo/date"
+	"github.com/elgopher/noteo/notes"
+	"github.com/elgopher/noteo/output"
 	"github.com/juju/ansiterm"
 	"golang.org/x/crypto/ssh/terminal"
 )

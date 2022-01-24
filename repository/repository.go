@@ -12,10 +12,10 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/elgopher/noteo/note"
+	"github.com/elgopher/noteo/parser"
+	"github.com/elgopher/noteo/tag"
 	"github.com/google/uuid"
-	"github.com/jacekolszak/noteo/note"
-	"github.com/jacekolszak/noteo/parser"
-	"github.com/jacekolszak/noteo/tag"
 	godiacritics "gopkg.in/Regis24GmbH/go-diacritics.v2"
 )
 

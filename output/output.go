@@ -1,6 +1,6 @@
 package output
 
-import "github.com/jacekolszak/noteo/notes"
+import "github.com/elgopher/noteo/notes"
 
 func StringTags(note notes.Note) ([]string, error) {
 	var ret []string
