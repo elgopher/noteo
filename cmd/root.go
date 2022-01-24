@@ -11,7 +11,7 @@ func Root() *cobra.Command {
 	root := cobra.Command{
 		Use:           "noteo",
 		Short:         "Command line note-taking assistant",
-		Version:       "0.5.0",
+		Version:       "0.6.0",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 	}
