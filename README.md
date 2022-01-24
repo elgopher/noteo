@@ -11,7 +11,7 @@ Download the [release archive](https://github.com/elgopher/noteo/releases) and e
 If your OS/arch is not available you can try to build it manually using [Go](https://golang.org/):
 
 ```bash
-go get -u github.com/elgopher/noteo
+go install github.com/elgopher/noteo
 ```
 
 ## Demo
