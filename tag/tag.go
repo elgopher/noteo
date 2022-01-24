@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jacekolszak/noteo/date"
+	"github.com/elgopher/noteo/date"
 )
 
 var validName = regexp.MustCompile(`^\S+$`)

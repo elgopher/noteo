@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jacekolszak/noteo/note"
-	"github.com/jacekolszak/noteo/repository"
+	"github.com/elgopher/noteo/note"
+	"github.com/elgopher/noteo/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

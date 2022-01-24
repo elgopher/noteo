@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jacekolszak/noteo/notes"
-	"github.com/jacekolszak/noteo/tag"
+	"github.com/elgopher/noteo/notes"
+	"github.com/elgopher/noteo/tag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

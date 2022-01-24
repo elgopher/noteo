@@ -7,12 +7,12 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/jacekolszak/noteo/date"
-	"github.com/jacekolszak/noteo/notes"
-	"github.com/jacekolszak/noteo/output/jayson"
-	"github.com/jacekolszak/noteo/output/quiet"
-	"github.com/jacekolszak/noteo/output/table"
-	"github.com/jacekolszak/noteo/output/yml"
+	"github.com/elgopher/noteo/date"
+	"github.com/elgopher/noteo/notes"
+	"github.com/elgopher/noteo/output/jayson"
+	"github.com/elgopher/noteo/output/quiet"
+	"github.com/elgopher/noteo/output/table"
+	"github.com/elgopher/noteo/output/yml"
 	"github.com/spf13/cobra"
 )
 

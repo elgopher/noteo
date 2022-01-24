@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/jacekolszak/noteo/repository"
+	"github.com/elgopher/noteo/repository"
 	"github.com/spf13/cobra"
 )
 

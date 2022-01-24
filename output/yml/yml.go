@@ -3,8 +3,8 @@ package yml
 import (
 	"time"
 
-	"github.com/jacekolszak/noteo/notes"
-	"github.com/jacekolszak/noteo/output"
+	"github.com/elgopher/noteo/notes"
+	"github.com/elgopher/noteo/output"
 	"gopkg.in/yaml.v2"
 )
 

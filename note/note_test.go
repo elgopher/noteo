@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jacekolszak/noteo/date"
-	"github.com/jacekolszak/noteo/note"
-	"github.com/jacekolszak/noteo/tag"
+	"github.com/elgopher/noteo/date"
+	"github.com/elgopher/noteo/note"
+	"github.com/elgopher/noteo/tag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

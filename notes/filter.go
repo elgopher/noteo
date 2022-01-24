@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/jacekolszak/noteo/date"
-	"github.com/jacekolszak/noteo/tag"
+	"github.com/elgopher/noteo/date"
+	"github.com/elgopher/noteo/tag"
 )
 
 func Filter(ctx context.Context, notes <-chan Note, predicates ...Predicate) (note <-chan Note, errors <-chan error) {

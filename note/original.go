@@ -4,7 +4,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/jacekolszak/noteo/parser"
+	"github.com/elgopher/noteo/parser"
 )
 
 type originalContent struct {

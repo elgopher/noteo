@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jacekolszak/noteo/date"
+	"github.com/elgopher/noteo/date"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
