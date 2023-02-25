@@ -4,10 +4,7 @@ go 1.14
 
 require (
 	github.com/google/uuid v1.3.0
-	github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a
-	github.com/lunixbochs/vtclean v1.0.0 // indirect
-	github.com/mattn/go-colorable v0.1.4 // indirect
-	github.com/mattn/go-isatty v0.0.11 // indirect
+	github.com/juju/ansiterm v1.0.0
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.5.1
