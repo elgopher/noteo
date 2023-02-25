@@ -11,5 +11,5 @@ require (
 	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
 	golang.org/x/text v0.3.3 // indirect
 	gopkg.in/Regis24GmbH/go-diacritics.v2 v2.0.1
-	gopkg.in/yaml.v2 v2.2.8
+	gopkg.in/yaml.v2 v2.4.0
 )
