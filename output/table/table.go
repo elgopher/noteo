@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/juju/ansiterm"
+	"golang.org/x/term"
+
 	"github.com/elgopher/noteo/date"
 	"github.com/elgopher/noteo/notes"
 	"github.com/elgopher/noteo/output"
-	"github.com/juju/ansiterm"
-	"golang.org/x/crypto/ssh/terminal"
 )
 
 var mapping = map[string]column{
@@ -21,7 +22,7 @@ var mapping = map[string]column{
 }
 
 func NewFormatter(columns []string, dateFormat date.Format) (*Formatter, error) {
-	w, h, err := terminal.GetSize(0)
+	w, h, err := term.GetSize(0)
 	if err != nil {
 		w = 80
 		h = 25
