@@ -13,7 +13,7 @@ install:
 .PHONY: lint
 lint:
 	echo $(mkfile_dir)
-	docker run --rm -v $(mkfile_dir):/app -w /app golangci/golangci-lint:v1.30.0 golangci-lint run -v -E goimports,unconvert,misspell,gocyclo,deadcode,errcheck,gosimple,govet,ineffassign,staticcheck,structcheck,typecheck,unused,varcheck,gocritic,gochecknoinits
+	docker run --rm -v $(mkfile_dir):/app -w /app golangci/golangci-lint:v1.51.2 golangci-lint run -v -E goimports,unconvert,misspell,gocyclo,deadcode,errcheck,gosimple,govet,ineffassign,staticcheck,structcheck,typecheck,unused,varcheck,gocritic,gochecknoinits
 
 .PHONY: test
 test:

@@ -1,6 +1,6 @@
 module github.com/elgopher/noteo
 
-go 1.14
+go 1.19
 
 require (
 	github.com/google/uuid v1.3.0
@@ -11,4 +11,16 @@ require (
 	golang.org/x/term v0.5.0
 	gopkg.in/Regis24GmbH/go-diacritics.v2 v2.0.3
 	gopkg.in/yaml.v2 v2.4.0
+)
+
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/inconshreveable/mousetrap v1.0.1 // indirect
+	github.com/lunixbochs/vtclean v1.0.0 // indirect
+	github.com/mattn/go-colorable v0.1.10 // indirect
+	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
