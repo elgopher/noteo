@@ -1,7 +1,6 @@
 package note
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -172,7 +171,7 @@ func (n *Note) Save() (bool, error) {
 		return false, nil
 	}
 	newBytes := []byte(newContent)
-	if err := ioutil.WriteFile(n.path, newBytes, 0664); err != nil {
+	if err := os.WriteFile(n.path, newBytes, 0664); err != nil {
 		return false, err
 	}
 	return true, nil

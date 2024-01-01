@@ -1,14 +1,14 @@
 package repository
 
 import (
-	"io/ioutil"
+	"os"
 
 	"gopkg.in/yaml.v2"
 )
 
 func parse(file string) (*Config, error) {
 	c := &Config{}
-	bytes, err := ioutil.ReadFile(file)
+	bytes, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}

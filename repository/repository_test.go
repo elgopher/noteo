@@ -2,16 +2,16 @@ package repository_test
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
-	"github.com/elgopher/noteo/note"
-	"github.com/elgopher/noteo/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/elgopher/noteo/note"
+	"github.com/elgopher/noteo/repository"
 )
 
 func TestRepository_Add(t *testing.T) {
@@ -120,7 +120,7 @@ func TestRepository_Move(t *testing.T) {
 	t.Run("should rename file", func(t *testing.T) {
 		dir, repo := repo(t)
 		require.NoError(t, os.Chdir(dir))
-		writeFile(t, filepath.Join("source.md"), "source")
+		writeFile(t, "source.md", "source")
 		linkFile := filepath.Join(dir, "link.md")
 		writeFile(t, linkFile, "[link](source.md)")
 		ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second)
@@ -203,13 +203,13 @@ func assertSuccess(t *testing.T, ctx context.Context, notes <-chan *note.Note, s
 }
 
 func assertFileEquals(t *testing.T, file, expected string) {
-	content, err := ioutil.ReadFile(file)
+	content, err := os.ReadFile(file)
 	require.NoError(t, err)
 	assert.Equal(t, expected, string(content))
 }
 
 func repo(t *testing.T) (dir string, repo *repository.Repository) {
-	dir, err := ioutil.TempDir("", "noteo-test")
+	dir, err := os.MkdirTemp("", "noteo-test")
 	require.NoError(t, err)
 	_, err = repository.Init(dir)
 	require.NoError(t, err)
@@ -219,5 +219,5 @@ func repo(t *testing.T) (dir string, repo *repository.Repository) {
 }
 
 func writeFile(t *testing.T, filename, content string) {
-	require.NoError(t, ioutil.WriteFile(filename, []byte(content), os.ModePerm))
+	require.NoError(t, os.WriteFile(filename, []byte(content), os.ModePerm))
 }

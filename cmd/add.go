@@ -2,17 +2,17 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/elgopher/noteo/config"
 	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+
+	"github.com/elgopher/noteo/config"
 )
 
 var add = &cobra.Command{
@@ -56,7 +56,7 @@ func readNoteText(flags *pflag.FlagSet, cfg *config.Config) (string, error) {
 	if len(flags.Args()) == 0 {
 		template := newFileTemplate(time.Now()) + "\n"
 		tmpFile := filepath.Join(os.TempDir(), uuid.New().String()+" .md")
-		if err := ioutil.WriteFile(tmpFile, []byte(template), 0664); err != nil {
+		if err := os.WriteFile(tmpFile, []byte(template), 0664); err != nil {
 			return "", err
 		}
 		text, err := textFromEditor(tmpFile, cfg.EditorCommand())
@@ -77,7 +77,7 @@ func readNoteText(flags *pflag.FlagSet, cfg *config.Config) (string, error) {
 func textFromEditor(file, editorCommand string) (string, error) {
 	editorNameWithArgs := strings.Split(editorCommand, " ")
 	name := editorNameWithArgs[0]
-	args := append(editorNameWithArgs[1:], file)
+	args := append(editorNameWithArgs[1:], file) //nolint
 	cmd := exec.Command(name, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -85,7 +85,7 @@ func textFromEditor(file, editorCommand string) (string, error) {
 	if err := cmd.Run(); err != nil {
 		return "", fmt.Errorf("%v", err)
 	}
-	text, err := ioutil.ReadFile(file)
+	text, err := os.ReadFile(file)
 	if err != nil {
 		return "", fmt.Errorf("%v", err)
 	}
