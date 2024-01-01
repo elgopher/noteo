@@ -26,7 +26,7 @@ type Tag struct {
 func (t Tag) Name() string {
 	s := t.tag
 	if strings.Contains(s, ":") {
-		return s[:strings.Index(s, ":")]
+		return s[:strings.Index(s, ":")] //nolint
 	}
 	return s
 }

@@ -5,18 +5,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"unicode"
 
+	"github.com/google/uuid"
+	godiacritics "gopkg.in/Regis24GmbH/go-diacritics.v2"
+
 	"github.com/elgopher/noteo/note"
 	"github.com/elgopher/noteo/parser"
 	"github.com/elgopher/noteo/tag"
-	"github.com/google/uuid"
-	godiacritics "gopkg.in/Regis24GmbH/go-diacritics.v2"
 )
 
 func Init(dir string) (string, error) {
@@ -27,7 +27,7 @@ func Init(dir string) (string, error) {
 	}
 	e, ok := err.(repoError)
 	if ok && e.IsNotRepository() {
-		return file, ioutil.WriteFile(file, []byte(`# This is a Noteo configuration for repository (YAML format)
+		return file, os.WriteFile(file, []byte(`# This is a Noteo configuration for repository (YAML format)
 # editor: vim +
 `), 0664)
 	}
@@ -72,7 +72,7 @@ func (r *Repository) Add(text string) (string, error) {
 	if err != nil {
 		return file, err
 	}
-	return rel, ioutil.WriteFile(file, []byte(text), 0664)
+	return rel, os.WriteFile(file, []byte(text), 0664)
 }
 
 func (r *Repository) TagFileWith(file string, newTag string) (bool, error) {
@@ -296,7 +296,7 @@ func generateFilename(text string) (string, error) {
 func firstLine(name string) string {
 	name = strings.TrimLeft(name, "\n")
 	if strings.Contains(name, "\n") {
-		name = name[:strings.Index(name, "\n")]
+		name = name[:strings.Index(name, "\n")] //nolint
 	}
 	name = strings.Trim(name, "\n")
 	return name

@@ -2,17 +2,17 @@ package note_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/elgopher/noteo/date"
 	"github.com/elgopher/noteo/note"
 	"github.com/elgopher/noteo/tag"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestNew(t *testing.T) {
@@ -45,7 +45,7 @@ func TestNote_Modified(t *testing.T) {
 	})
 
 	t.Run("should not error for existing file", func(t *testing.T) {
-		file, err := ioutil.TempFile("", "noteo-test")
+		file, err := os.CreateTemp("", "noteo-test")
 		require.NoError(t, err)
 		n := note.New(file.Name())
 		// when
@@ -369,21 +369,21 @@ func TestNote_UpdateLink(t *testing.T) {
 }
 
 func writeTempFile(t *testing.T, content string) string {
-	file, err := ioutil.TempFile("", "noteo-test")
+	file, err := os.CreateTemp("", "noteo-test")
 	require.NoError(t, err)
-	require.NoError(t, ioutil.WriteFile(file.Name(), []byte(content), os.ModePerm))
+	require.NoError(t, os.WriteFile(file.Name(), []byte(content), os.ModePerm))
 	return file.Name()
 }
 
 func writeTempFileWithFunction(t *testing.T, content func(filename string) string) string {
-	file, err := ioutil.TempFile("", "noteo-test")
+	file, err := os.CreateTemp("", "noteo-test")
 	require.NoError(t, err)
-	require.NoError(t, ioutil.WriteFile(file.Name(), []byte(content(file.Name())), os.ModePerm))
+	require.NoError(t, os.WriteFile(file.Name(), []byte(content(file.Name())), os.ModePerm))
 	return file.Name()
 }
 
 func assertFileEquals(t *testing.T, filename, expectedContent string) {
-	bytes, err := ioutil.ReadFile(filename)
+	bytes, err := os.ReadFile(filename)
 	require.NoError(t, err)
 	assert.Equal(t, expectedContent, string(bytes))
 }

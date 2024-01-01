@@ -7,9 +7,10 @@ import (
 	"sync"
 	"time"
 
+	"gopkg.in/yaml.v2"
+
 	"github.com/elgopher/noteo/date"
 	"github.com/elgopher/noteo/tag"
-	"gopkg.in/yaml.v2"
 )
 
 type frontMatter struct {
