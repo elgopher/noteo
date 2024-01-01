@@ -8,7 +8,7 @@ require (
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.2
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+	golang.org/x/crypto v0.17.0
 	gopkg.in/Regis24GmbH/go-diacritics.v2 v2.0.3
 	gopkg.in/yaml.v2 v2.4.0
 )
